@@ -1,0 +1,82 @@
+# Odoo 15 / 17 / 19 for appex-odoo integration tests. Use run-integration.sh.
+# Ports bind to 127.0.0.1 only. Hosts it15/it17/it19.localhost select the database (dbfilter ^%d$).
+name: appex-odoo-it
+
+x-postgres: &postgres
+  environment:
+    POSTGRES_USER: odoo
+    POSTGRES_PASSWORD: odoo
+    POSTGRES_DB: postgres
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+    interval: 2s
+    timeout: 5s
+    retries: 30
+
+x-odoo-healthcheck: &odoo-healthcheck
+  test:
+    - CMD-SHELL
+    - >-
+      curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json'
+      -d '{"jsonrpc":"2.0","method":"call","params":{}}' http://localhost:8069/web/webclient/version_info | grep -q 200
+  interval: 3s
+  timeout: 5s
+  retries: 60
+
+services:
+  db15:
+    <<: *postgres
+    image: postgres:15
+  db17:
+    <<: *postgres
+    image: postgres:16
+  db19:
+    <<: *postgres
+    image: postgres:17
+
+  odoo15:
+    image: odoo:15.0
+    depends_on: { db15: { condition: service_healthy } }
+    environment: { HOST: db15, USER: odoo, PASSWORD: odoo }
+    volumes: ["./odoo.conf:/etc/odoo/odoo.conf:ro", "odoo15-data:/var/lib/odoo"]
+    ports: ["127.0.0.1:18015:8069", "[::1]:18015:8069"]
+    healthcheck: *odoo-healthcheck
+
+  odoo15-nolist:
+    image: odoo:15.0
+    command: ["odoo", "--no-database-list"]
+    depends_on: { db15: { condition: service_healthy } }
+    environment: { HOST: db15, USER: odoo, PASSWORD: odoo }
+    volumes: ["./odoo.conf:/etc/odoo/odoo.conf:ro", "odoo15-data:/var/lib/odoo"]
+    ports: ["127.0.0.1:18115:8069", "[::1]:18115:8069"]
+    healthcheck: *odoo-healthcheck
+
+  odoo17:
+    image: odoo:17.0
+    depends_on: { db17: { condition: service_healthy } }
+    environment: { HOST: db17, USER: odoo, PASSWORD: odoo }
+    volumes: ["./odoo.conf:/etc/odoo/odoo.conf:ro", "odoo17-data:/var/lib/odoo"]
+    ports: ["127.0.0.1:18017:8069", "[::1]:18017:8069"]
+    healthcheck: *odoo-healthcheck
+
+  odoo19:
+    image: odoo:19.0
+    depends_on: { db19: { condition: service_healthy } }
+    environment: { HOST: db19, USER: odoo, PASSWORD: odoo }
+    volumes: ["./odoo.conf:/etc/odoo/odoo.conf:ro", "odoo19-data:/var/lib/odoo"]
+    ports: ["127.0.0.1:18019:8069", "[::1]:18019:8069"]
+    healthcheck: *odoo-healthcheck
+
+  odoo19-nolist:
+    image: odoo:19.0
+    command: ["odoo", "--no-database-list"]
+    depends_on: { db19: { condition: service_healthy } }
+    environment: { HOST: db19, USER: odoo, PASSWORD: odoo }
+    volumes: ["./odoo.conf:/etc/odoo/odoo.conf:ro", "odoo19-data:/var/lib/odoo"]
+    ports: ["127.0.0.1:18119:8069", "[::1]:18119:8069"]
+    healthcheck: *odoo-healthcheck
+
+volumes:
+  odoo15-data:
+  odoo17-data:
+  odoo19-data:

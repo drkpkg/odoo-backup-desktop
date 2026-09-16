@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14876f"/>
+      <stop offset="1" stop-color="#0b5c4c"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="216" fill="url(#bg)"/>
+  <!-- database cylinder -->
+  <g fill="none" stroke="#ffffff" stroke-width="56" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="512" cy="286" rx="236" ry="86"/>
+    <path d="M276 286v300c0 47 106 86 236 86"/>
+    <path d="M748 286v176"/>
+    <path d="M276 436c0 47 106 86 236 86s236-39 236-86"/>
+  </g>
+  <!-- download arrow -->
+  <g fill="none" stroke="#ffffff" stroke-width="56" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M700 560v236"/>
+    <path d="M608 712l92 92 92-92"/>
+  </g>
+</svg>

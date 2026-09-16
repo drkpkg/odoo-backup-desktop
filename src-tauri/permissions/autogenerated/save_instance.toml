@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-instance"
+description = "Enables the save_instance command without any pre-configured scope."
+commands.allow = ["save_instance"]
+
+[[permission]]
+identifier = "deny-save-instance"
+description = "Denies the save_instance command without any pre-configured scope."
+commands.deny = ["save_instance"]

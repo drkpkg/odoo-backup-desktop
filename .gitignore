@@ -1,0 +1,33 @@
+# Node / frontend
+node_modules
+dist
+dist-ssr
+*.local
+coverage
+
+# Rust
+/target
+**/target
+
+# Tauri generated
+src-tauri/gen/schemas
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.sw?
+
+# Local Claude Code settings (personal)
+.claude/settings.local.json
+
+# Local test artifacts
+dev/odoo/.data
+*.zip.part

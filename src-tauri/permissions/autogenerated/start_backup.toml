@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-start-backup"
+description = "Enables the start_backup command without any pre-configured scope."
+commands.allow = ["start_backup"]
+
+[[permission]]
+identifier = "deny-start-backup"
+description = "Denies the start_backup command without any pre-configured scope."
+commands.deny = ["start_backup"]

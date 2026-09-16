@@ -1,0 +1,46 @@
+[package]
+name = "appex-backup"
+description = "Appex Backup: backups de instancias Odoo"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[lib]
+# The `_lib` suffix avoids a name clash between the lib and bin targets on Windows.
+name = "appex_backup_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6", features = [] }
+
+[dependencies]
+appex-odoo.workspace = true
+appex-storage.workspace = true
+appex-vault.workspace = true
+
+chrono.workspace = true
+reqwest.workspace = true
+rusqlite = { version = "0.40", features = ["bundled"] }
+secrecy.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2.11", features = [] }
+tauri-plugin-dialog = "2.7"
+tauri-plugin-notification = "2.4"
+tauri-plugin-opener = "2.5"
+tauri-plugin-single-instance = "2.4"
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+tracing-appender = "0.2.5"
+tracing-subscriber = { version = "0.3.23", features = ["fmt", "env-filter"] }
+url.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tauri = { version = "2.11", features = ["test"] }
+tempfile.workspace = true

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-connect-drive"
+description = "Enables the connect_drive command without any pre-configured scope."
+commands.allow = ["connect_drive"]
+
+[[permission]]
+identifier = "deny-connect-drive"
+description = "Denies the connect_drive command without any pre-configured scope."
+commands.deny = ["connect_drive"]

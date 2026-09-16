@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+/* Tokens semánticos: claro por defecto, oscuro según el sistema operativo. */
+:root {
+  color-scheme: light dark;
+
+  --app-bg: #f4f5f7;
+  --app-surface: #ffffff;
+  --app-surface-2: #f0f2f5;
+  --app-sidebar: #eceff3;
+  --app-border: #dfe3e8;
+  --app-border-strong: #c7cdd5;
+  --app-text: #17202a;
+  --app-muted: #5b6776;
+  --app-subtle: #8a94a1;
+
+  --app-accent: #0e6b63;
+  --app-accent-hover: #0b5a53;
+  --app-accent-fg: #ffffff;
+  --app-accent-soft: #dff0ed;
+
+  --app-success: #1f7a45;
+  --app-success-soft: #e1f3e8;
+  --app-warning: #9a5b00;
+  --app-warning-soft: #fcf0d8;
+  --app-danger: #b3261e;
+  --app-danger-soft: #fbe5e3;
+  --app-info: #2458a6;
+  --app-info-soft: #e3ecfa;
+
+  --app-focus: #3aa597;
+  --app-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
+  --app-shadow-lg: 0 12px 32px rgb(16 24 40 / 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg: #0f1216;
+    --app-surface: #161a20;
+    --app-surface-2: #1c2129;
+    --app-sidebar: #12161b;
+    --app-border: #262c35;
+    --app-border-strong: #353d48;
+    --app-text: #e5e9ee;
+    --app-muted: #9aa5b3;
+    --app-subtle: #6f7a88;
+
+    --app-accent: #3cb8a8;
+    --app-accent-hover: #55c8b9;
+    --app-accent-fg: #06201d;
+    --app-accent-soft: #10302c;
+
+    --app-success: #5cc88b;
+    --app-success-soft: #13301f;
+    --app-warning: #e7b05a;
+    --app-warning-soft: #33260f;
+    --app-danger: #f08a82;
+    --app-danger-soft: #3a1714;
+    --app-info: #85aef0;
+    --app-info-soft: #16243a;
+
+    --app-focus: #55c8b9;
+    --app-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --app-shadow-lg: 0 16px 40px rgb(0 0 0 / 0.55);
+  }
+}
+
+@theme inline {
+  --font-sans: system-ui, -apple-system, "Segoe UI", "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+
+  --color-bg: var(--app-bg);
+  --color-surface: var(--app-surface);
+  --color-surface-2: var(--app-surface-2);
+  --color-sidebar: var(--app-sidebar);
+  --color-border: var(--app-border);
+  --color-border-strong: var(--app-border-strong);
+  --color-fg: var(--app-text);
+  --color-muted: var(--app-muted);
+  --color-subtle: var(--app-subtle);
+  --color-accent: var(--app-accent);
+  --color-accent-hover: var(--app-accent-hover);
+  --color-accent-fg: var(--app-accent-fg);
+  --color-accent-soft: var(--app-accent-soft);
+  --color-success: var(--app-success);
+  --color-success-soft: var(--app-success-soft);
+  --color-warning: var(--app-warning);
+  --color-warning-soft: var(--app-warning-soft);
+  --color-danger: var(--app-danger);
+  --color-danger-soft: var(--app-danger-soft);
+  --color-info: var(--app-info);
+  --color-info-soft: var(--app-info-soft);
+  --color-focus: var(--app-focus);
+
+  --shadow-card: var(--app-shadow);
+  --shadow-overlay: var(--app-shadow-lg);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--app-bg);
+    color: var(--app-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--app-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--app-accent-soft);
+  }
+
+  dialog::backdrop {
+    background: rgb(8 12 16 / 0.45);
+    backdrop-filter: blur(1px);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.progress-indeterminate {
+  animation: indeterminate 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-indeterminate {
+    animation: none;
+    transform: none;
+    width: 100% !important;
+    opacity: 0.4;
+  }
+}

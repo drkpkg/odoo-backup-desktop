@@ -1,0 +1,42 @@
+[workspace]
+resolver = "3"
+members = ["src-tauri", "crates/appex-vault", "crates/appex-odoo", "crates/appex-storage"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT"
+authors = ["Felix Daniel Coca Calvimontes"]
+repository = "https://github.com/drkpkg/appex-backup"
+
+[workspace.dependencies]
+appex-vault = { path = "crates/appex-vault" }
+appex-odoo = { path = "crates/appex-odoo" }
+appex-storage = { path = "crates/appex-storage" }
+
+async-trait = "0.1.92"
+base64 = "0.23"
+bytes = "1.12"
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde", "std"] }
+futures-util = "0.3.34"
+reqwest = { version = "0.13.5", default-features = false, features = ["native-tls", "http2", "charset", "system-proxy", "json", "stream", "form", "query"] }
+secrecy = { version = "0.10.3", features = ["serde"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sha2 = "0.11"
+tempfile = "3.27"
+thiserror = "2.0.20"
+tokio = { version = "1.53", features = ["rt-multi-thread", "macros", "fs", "io-util", "net", "sync", "time"] }
+tokio-util = "0.7.19"
+tracing = "0.1.44"
+url = { version = "2.5.8", features = ["serde"] }
+uuid = { version = "1.26", features = ["v4", "serde"] }
+wiremock = "0.6.5"
+zeroize = { version = "1.9", features = ["std"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+strip = true

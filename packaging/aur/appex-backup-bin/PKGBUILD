@@ -1,0 +1,52 @@
+# Maintainer: Felix Daniel Coca Calvimontes <daniel.uremix@gmail.com>
+#
+# Repackages the official .deb built by the release workflow.
+# - Release flow: .github/workflows/release.yml replaces sha256sums with the real checksum
+#   and attaches PKGBUILD + .SRCINFO to the GitHub release.
+# - Local test: packaging/aur/build-local.sh (uses a locally built .deb, checksum skipped).
+
+pkgname=appex-backup-bin
+_pkgname=appex-backup
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Backups .zip de instancias Odoo 15-19 con credenciales cifradas y subida a Google Drive"
+arch=('x86_64')
+url="https://github.com/drkpkg/appex-backup"
+license=('MIT')
+depends=(
+  'cairo'
+  'desktop-file-utils'
+  'gdk-pixbuf2'
+  'glib2'
+  'gtk3'
+  'hicolor-icon-theme'
+  'libsoup3'
+  'openssl'
+  'pango'
+  'webkit2gtk-4.1'
+)
+provides=("${_pkgname}")
+conflicts=("${_pkgname}")
+options=('!strip' '!debug')
+source_x86_64=("${_pkgname}-${pkgver}-x86_64.deb::${url}/releases/download/v${pkgver}/${_pkgname}_${pkgver}_amd64.deb")
+# SKIP only for local builds; the release workflow writes the real checksum.
+sha256sums_x86_64=('SKIP')
+
+package() {
+  # makepkg already unpacked the .deb (ar archive) into $srcdir.
+  local data
+  data="$(find "${srcdir}" -maxdepth 1 -name 'data.tar.*' -print -quit)"
+  if [[ -z ${data} ]]; then
+    echo "data.tar.* not found in the .deb" >&2
+    return 1
+  fi
+  bsdtar -xf "${data}" -C "${pkgdir}"
+
+  # Normalize permissions coming from the .deb.
+  find "${pkgdir}" -type d -exec chmod 755 {} +
+  chmod 755 "${pkgdir}/usr/bin/${_pkgname}"
+
+  # MIT license: the .deb ships it as the Debian copyright file.
+  install -Dm644 "${pkgdir}/usr/share/doc/${_pkgname}/copyright" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  rm -rf "${pkgdir}/usr/share/doc"
+}

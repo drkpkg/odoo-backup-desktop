@@ -1,0 +1,243 @@
+name: Release
+
+# Builds installers and attaches them to a *draft* GitHub Release.
+#   Linux  (ubuntu-22.04): .deb, .rpm, AppImage (Wayland libs stripped)
+#   Windows (windows-latest): NSIS -setup.exe
+#   Arch   (archlinux container): appex-backup-bin .pkg.tar.zst + PKGBUILD/.SRCINFO
+#
+# Cut a release: bump package.json + Cargo.toml versions, push tag vX.Y.Z.
+# Review the draft release, then publish it.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  NODE_VERSION: "24"
+  PNPM_VERSION: "11"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # A single job owns the draft release so the parallel bundle jobs never create duplicates.
+  create-release:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    outputs:
+      release-id: ${{ steps.release.outputs.id }}
+    steps:
+      - name: Create or reuse the draft release
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BODY: |
+            Instaladores:
+            - Ubuntu/Debian: `appex-backup_*_amd64.deb`
+            - Fedora/openSUSE: `appex-backup_*_x86_64.rpm`
+            - Arch Linux: `appex-backup-bin-*.pkg.tar.zst` (o AUR `appex-backup-bin`)
+            - Linux genérico: `.AppImage` (mejor esfuerzo; en Wayland preferir .deb/Arch)
+            - Windows: `*-setup.exe`
+        run: |
+          set -euo pipefail
+          id="$(gh api "repos/${REPO}/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"${RELEASE_TAG}\") | .id" | head -n 1)"
+          if [[ -z ${id} ]]; then
+            id="$(gh api --method POST "repos/${REPO}/releases" \
+              -f tag_name="${RELEASE_TAG}" -f name="Appex Backup ${RELEASE_TAG}" -f body="${BODY}" \
+              -F draft=true -F prerelease=false --jq .id)"
+          fi
+          echo "id=${id}" >> "$GITHUB_OUTPUT"
+
+  bundle:
+    name: Bundle (${{ matrix.platform }})
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+            args: --bundles deb,rpm,appimage
+          - platform: windows-latest
+            args: --bundles nsis
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Install Tauri Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential file patchelf pkg-config \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+            libxdo-dev libssl-dev libdbus-1-dev
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.platform }}
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and upload bundles
+        id: tauri
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # --- Updater (disabled) ---------------------------------------------------------
+          # Enable after adding plugins.updater + bundle.createUpdaterArtifacts to tauri.conf.json:
+          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # --- Windows code signing (disabled) ----------------------------------------------
+          # Option A: Microsoft Artifact Signing (check country eligibility) via signCommand.
+          # Option B: OV certificate in a cloud HSM via signCommand.
+          # Add bundle.windows.signCommand to tauri.conf.json (or pass it with
+          # `--config` in `args`) and provide the secrets it needs, e.g.:
+          # AZURE_CLIENT_ID: ${{ secrets.WINDOWS_SIGN_AZURE_CLIENT_ID }}
+          # AZURE_CLIENT_SECRET: ${{ secrets.WINDOWS_SIGN_AZURE_CLIENT_SECRET }}
+          # AZURE_TENANT_ID: ${{ secrets.WINDOWS_SIGN_AZURE_TENANT_ID }}
+        with:
+          releaseId: ${{ needs.create-release.outputs.release-id }}
+          args: ${{ matrix.args }}
+          releaseAssetNamePattern: "[mainBinaryName]_[version]_[arch][setup][ext]"
+          uploadUpdaterJson: false
+          retryAttempts: 1
+
+      - name: Strip Wayland libraries from the AppImage and replace the release asset
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ needs.create-release.outputs.release-id }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          appimages=(target/release/bundle/appimage/*.AppImage)
+          if [[ ${#appimages[@]} -ne 1 ]]; then
+            echo "expected exactly one AppImage, found ${#appimages[@]}" >&2
+            exit 1
+          fi
+          packaging/appimage/strip-wayland-libs.sh "${appimages[0]}"
+
+          asset_name="$(gh api "repos/${REPO}/releases/${RELEASE_ID}/assets" --paginate \
+            --jq '.[] | select(.name | endswith(".AppImage")) | .name' | head -n 1)"
+          asset_id="$(gh api "repos/${REPO}/releases/${RELEASE_ID}/assets" --paginate \
+            --jq '.[] | select(.name | endswith(".AppImage")) | .id' | head -n 1)"
+          if [[ -z ${asset_name} ]]; then
+            echo "AppImage asset not found in release ${RELEASE_ID}" >&2
+            exit 1
+          fi
+          gh api --method DELETE "repos/${REPO}/releases/assets/${asset_id}"
+          gh api --method POST \
+            -H "Content-Type: application/octet-stream" \
+            "https://uploads.github.com/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${asset_name}" \
+            --input "${appimages[0]}" >/dev/null
+          echo "replaced ${asset_name}"
+
+  arch-package:
+    name: Arch package (appex-backup-bin)
+    needs: [create-release, bundle]
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install build tools
+        run: |
+          pacman -Syu --noconfirm --needed base-devel git github-cli pacman-contrib
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Build package from the release .deb
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ needs.create-release.outputs.release-id }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z ${RELEASE_ID} ]]; then
+            echo "release id missing from the bundle job" >&2
+            exit 1
+          fi
+          version="${RELEASE_TAG#v}"
+          pkgver="${version//-/_}"
+
+          build_dir="$(mktemp -d)"
+          cp packaging/aur/appex-backup-bin/PKGBUILD "${build_dir}/PKGBUILD"
+
+          deb_url="$(gh api "repos/${REPO}/releases/${RELEASE_ID}/assets" --paginate \
+            --jq '.[] | select(.name | endswith("_amd64.deb")) | .url' | head -n 1)"
+          if [[ -z ${deb_url} ]]; then
+            echo "no *_amd64.deb asset in release ${RELEASE_ID}" >&2
+            exit 1
+          fi
+          # makepkg uses this local file (name matches the source entry) instead of downloading.
+          gh api -H "Accept: application/octet-stream" "${deb_url}" > "${build_dir}/appex-backup-${pkgver}-x86_64.deb"
+
+          sha="$(sha256sum "${build_dir}/appex-backup-${pkgver}-x86_64.deb" | cut -d' ' -f1)"
+          sed -i \
+            -e "s/^pkgver=.*/pkgver=${pkgver}/" \
+            -e "s/^pkgrel=.*/pkgrel=1/" \
+            -e "s/^sha256sums_x86_64=.*/sha256sums_x86_64=('${sha}')/" \
+            "${build_dir}/PKGBUILD"
+
+          useradd --create-home builder
+          chown -R builder:builder "${build_dir}"
+          su builder -c "cd '${build_dir}' && makepkg --force --nodeps --noconfirm && makepkg --printsrcinfo > .SRCINFO"
+
+          mkdir -p out
+          cp "${build_dir}"/*.pkg.tar.zst out/
+          cp "${build_dir}/PKGBUILD" out/appex-backup-bin.PKGBUILD
+          cp "${build_dir}/.SRCINFO" out/appex-backup-bin.SRCINFO
+          ls -la out
+
+      - name: Upload Arch assets to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ needs.create-release.outputs.release-id }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in out/*; do
+            name="$(basename "${file}")"
+            existing="$(gh api "repos/${REPO}/releases/${RELEASE_ID}/assets" --paginate \
+              --jq ".[] | select(.name == \"${name}\") | .id")"
+            if [[ -n ${existing} ]]; then
+              gh api --method DELETE "repos/${REPO}/releases/assets/${existing}"
+            fi
+            gh api --method POST \
+              -H "Content-Type: application/octet-stream" \
+              "https://uploads.github.com/repos/${REPO}/releases/${RELEASE_ID}/assets?name=${name}" \
+              --input "${file}" >/dev/null
+            echo "uploaded ${name}"
+          done
