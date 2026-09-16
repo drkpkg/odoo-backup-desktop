@@ -42,20 +42,20 @@ impl std::fmt::Display for CommandError {
 
 impl std::error::Error for CommandError {}
 
-impl From<appex_vault::VaultError> for CommandError {
-    fn from(err: appex_vault::VaultError) -> Self {
+impl From<obd_vault::VaultError> for CommandError {
+    fn from(err: obd_vault::VaultError) -> Self {
         Self::new(err.code(), err.to_string())
     }
 }
 
-impl From<appex_odoo::OdooError> for CommandError {
-    fn from(err: appex_odoo::OdooError) -> Self {
+impl From<obd_odoo::OdooError> for CommandError {
+    fn from(err: obd_odoo::OdooError) -> Self {
         Self::new(err.code(), err.to_string())
     }
 }
 
-impl From<appex_storage::StorageError> for CommandError {
-    fn from(err: appex_storage::StorageError) -> Self {
+impl From<obd_storage::StorageError> for CommandError {
+    fn from(err: obd_storage::StorageError) -> Self {
         Self::new(err.code(), err.to_string())
     }
 }

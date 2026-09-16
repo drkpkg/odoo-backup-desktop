@@ -22,7 +22,7 @@ export function normalizeUrl(value: string): string {
 
 /**
  * Deduce el nombre de base de datos desde el subdominio (dbfilter = ^%d$), igual que
- * `appex_odoo::database_from_host`: primer segmento del host sin "www."; null para IPs
+ * `obd_odoo::database_from_host`: primer segmento del host sin "www."; null para IPs
  * y hosts de un solo segmento.
  */
 export function databaseFromUrl(value: string): string | null {
@@ -37,7 +37,7 @@ export function databaseFromUrl(value: string): string | null {
 }
 
 export const secretKindSchema = z.enum(["password", "api_key"]);
-export const transportSchema = z.enum(["auto", "db_manager", "appex_module"]);
+export const transportSchema = z.enum(["auto", "db_manager", "obd_module"]);
 export const protocolSchema = z.enum(["auto", "xml_rpc", "json2"]);
 
 export const instanceFormBaseSchema = z.object({
@@ -85,11 +85,11 @@ export function makeInstanceFormSchema(ctx: InstanceFormContext) {
     if (values.protocol === "json2" && values.secretKind !== "api_key") {
       issues.addIssue({ code: "custom", path: ["protocol"], message: "JSON-2 requiere una API key." });
     }
-    if (values.transport === "appex_module" && values.secretKind !== "api_key") {
+    if (values.transport === "obd_module" && values.secretKind !== "api_key") {
       issues.addIssue({
         code: "custom",
         path: ["transport"],
-        message: "El módulo appex_backup requiere una API key.",
+        message: "El módulo obd_backup requiere una API key.",
       });
     }
     const hasMaster = !values.removeMasterPassword && (values.masterPassword.length > 0 || ctx.hasMasterPassword);

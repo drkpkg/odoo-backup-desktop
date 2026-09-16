@@ -1,15 +1,15 @@
 ---
 name: gdrive-storage
-description: Use when working on crates/appex-storage or backup destinations in Appex Backup — the StorageAdapter trait, local folder adapter, retention rules, Google Drive OAuth (loopback + PKCE), Drive resumable uploads, folder tagging, shared drives, OAuth client/verification setup, or adding a new destination (S3, SFTP, OneDrive, Dropbox, WebDAV).
+description: Use when working on crates/obd-storage or backup destinations in Odoo Backup Desktop — the StorageAdapter trait, local folder adapter, retention rules, Google Drive OAuth (loopback + PKCE), Drive resumable uploads, folder tagging, shared drives, OAuth client/verification setup, or adding a new destination (S3, SFTP, OneDrive, Dropbox, WebDAV).
 ---
 
 # Storage adapters and Google Drive
 
-## Adapter contract (`crates/appex-storage/src/adapter.rs`)
+## Adapter contract (`crates/obd-storage/src/adapter.rs`)
 
 `StorageAdapter`: `provider_id`, `capabilities`, `ensure_target(TargetSpec) → TargetId`,
 `upload(target, file, meta, progress, cancel) → RemoteObject` (streaming, never whole file in RAM),
-`list_backups(target)` (newest first, only files created by Appex Backup), `delete(object)`.
+`list_backups(target)` (newest first, only files created by Odoo Backup Desktop), `delete(object)`.
 
 - Retention lives in `retention.rs` (`select_expired` + `apply_retention`), **not** in adapters.
   Rules: `keep_last`, `max_age_days`; the newest backup is never deleted.
@@ -47,9 +47,9 @@ description: Use when working on crates/appex-storage or backup destinations in 
 ## Drive API rules
 
 - Folder: `mimeType = application/vnd.google-apps.folder`, tagged with
-  `appProperties: {appexBackup: "root"}` (root) and `{appexBackup: "instance", instanceId}`.
-  Find with `q = "appProperties has { key='appexBackup' and value='root' } and trashed = false"`.
-- Files: `appProperties: {appexBackup: "file", instanceId, sha256}`.
+  `appProperties: {obdBackup: "root"}` (root) and `{obdBackup: "instance", instanceId}`.
+  Find with `q = "appProperties has { key='obdBackup' and value='root' } and trashed = false"`.
+- Files: `appProperties: {obdBackup: "file", instanceId, sha256}`.
 - **Resumable upload** (`uploadType=resumable`) for everything > 5 MB:
   1. `POST {upload_api}files?uploadType=resumable` with JSON metadata, `X-Upload-Content-Type`,
      `X-Upload-Content-Length` → session URI in `Location`.

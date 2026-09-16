@@ -20,9 +20,9 @@ export type VaultLockedPayload = { reason: "manual" | "idle" };
 // --- Instancias ------------------------------------------------------------
 
 export type SecretKind = "password" | "api_key";
-export type TransportPreference = "auto" | "db_manager" | "appex_module";
+export type TransportPreference = "auto" | "db_manager" | "obd_module";
 export type ProtocolPreference = "auto" | "xml_rpc" | "json2";
-export type TransportKind = "db_manager" | "appex_module";
+export type TransportKind = "db_manager" | "obd_module";
 export type RpcProtocol = "xml_rpc" | "json2";
 
 export type OdooVersion = {

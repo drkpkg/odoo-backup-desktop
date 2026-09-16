@@ -3,9 +3,9 @@
 //! Records (`*Record`, `VaultData`) may hold secrets and never leave Rust.
 //! Views (`*View`, `AppStatus`, `DriveStatus`) are what the webview receives.
 
-use appex_odoo::{ProbeReport, ProtocolPreference, SecretKind, TransportKind};
-use appex_vault::SecretField;
 use chrono::{DateTime, Utc};
+use obd_odoo::{ProbeReport, ProtocolPreference, SecretKind, TransportKind};
+use obd_vault::SecretField;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::history::HistoryEntry;
@@ -40,7 +40,7 @@ pub enum TransportPreference {
     #[default]
     Auto,
     DbManager,
-    AppexModule,
+    ObdModule,
 }
 
 impl TransportPreference {
@@ -48,7 +48,7 @@ impl TransportPreference {
         match self {
             Self::Auto => None,
             Self::DbManager => Some(TransportKind::DbManager),
-            Self::AppexModule => Some(TransportKind::AppexModule),
+            Self::ObdModule => Some(TransportKind::ObdModule),
         }
     }
 }

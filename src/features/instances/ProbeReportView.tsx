@@ -64,7 +64,7 @@ export function ProbeReportView({ report }: { report: ProbeReport }) {
       <ul className="divide-y divide-border rounded-lg border border-border px-3">
         <CheckRow label="Autenticación" check={report.auth} okText="Credenciales válidas." />
         <CheckRow
-          label="Módulo appex_backup"
+          label="Módulo obd_backup"
           check={report.module}
           okText={`Instalado (API v${report.moduleApiVersion ?? "?"}). Funciona aunque list_db esté deshabilitado.`}
           hint="Necesario para respaldar instancias con list_db = False."
@@ -79,13 +79,13 @@ export function ProbeReportView({ report }: { report: ProbeReport }) {
 
       {report.recommendedTransport ? (
         <Alert tone="success" title={`Transporte recomendado: ${TRANSPORT_LABELS[report.recommendedTransport]}`}>
-          {report.recommendedTransport === "appex_module"
+          {report.recommendedTransport === "obd_module"
             ? "Usa la API key y no necesita la contraseña maestra."
             : "Envía la contraseña maestra al servidor en cada backup."}
         </Alert>
       ) : (
         <Alert tone="warning" title="No hay un transporte de backup disponible">
-          Instala el módulo appex_backup (requiere API key) o habilita list_db y guarda la contraseña maestra.
+          Instala el módulo obd_backup (requiere API key) o habilita list_db y guarda la contraseña maestra.
         </Alert>
       )}
 

@@ -1,6 +1,6 @@
 [[permission]]
 identifier = "allow-app-commands"
-description = "All Appex Backup application commands."
+description = "All Odoo Backup Desktop application commands."
 commands.allow = [
   "get_app_status",
   "create_vault",

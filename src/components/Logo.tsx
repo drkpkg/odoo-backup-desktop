@@ -1,4 +1,4 @@
-/** Marca de Appex Backup: bóveda con flecha de descarga. */
+/** Marca de Odoo Backup Desktop: bóveda con flecha de descarga. */
 export function Logo({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">

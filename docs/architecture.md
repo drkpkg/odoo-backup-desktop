@@ -1,30 +1,33 @@
-# Appex Backup — Arquitectura (desktop)
+# Odoo Backup Desktop — Arquitectura (desktop)
 
 Aplicación de escritorio (Linux y Windows) para hacer backups `.zip` de instancias Odoo 15.0–19.0,
 guardar credenciales cifradas y subir los backups a destinos externos (Google Drive primero).
 
-> Alcance actual: **solo desktop** (backups manuales desde la UI). El daemon (`appex-backupd`,
-> programación y detección de cambios por hash) y el módulo Odoo `appex_backup` se desarrollan
+> Alcance actual: **solo desktop** (backups manuales desde la UI). El daemon (`obd-daemon`,
+> programación y detección de cambios por hash) y el módulo Odoo `obd_backup` se desarrollan
 > más adelante. El cliente del módulo ya está implementado contra el contrato de
-> [`appex-backup-module-api.md`](appex-backup-module-api.md).
+> [`obd-backup-module-api.md`](obd-backup-module-api.md).
 
 ## Stack
 
 | Capa | Tecnología |
 |---|---|
-| Shell desktop | Tauri 2.11 (`src-tauri/`, crate `appex-backup`) |
+| Shell desktop | Tauri 2.11 (`src-tauri/`, crate `odoo-backup-desktop`) |
 | UI | React 19 + TypeScript + Vite (`src/`) |
 | Núcleo | Rust 2024, crates en `crates/` |
 | Empaquetado | `.deb`, `.rpm`, AppImage, NSIS `.exe`, PKGBUILD (AUR) |
 
-Identificador: `lat.appex.backup` · Producto: `Appex Backup` · Binario: `appex-backup`.
+Identificador: `io.github.drkpkg.odoo-backup-desktop` · Producto: `Odoo Backup Desktop` · Binario: `odoo-backup-desktop`.
+El prefijo `obd` (Odoo Backup Desktop) nombra los crates internos y el módulo Odoo `obd_backup`.
+
+> "Odoo" es marca registrada de Odoo S.A. Este proyecto es independiente y no está afiliado a Odoo S.A.
 
 ## Estructura
 
 ```
-crates/appex-vault     Bóveda cifrada (XChaCha20-Poly1305 + Argon2id + llavero del SO)
-crates/appex-odoo      Detección de versión, XML-RPC / JSON-2, transportes de backup, validación del zip
-crates/appex-storage   StorageAdapter (carpeta local, Google Drive), retención
+crates/obd-vault     Bóveda cifrada (XChaCha20-Poly1305 + Argon2id + llavero del SO)
+crates/obd-odoo      Detección de versión, XML-RPC / JSON-2, transportes de backup, validación del zip
+crates/obd-storage   StorageAdapter (carpeta local, Google Drive), retención
 src-tauri/             Estado de la app, comandos IPC, ejecución de backups, historial (SQLite)
 src/                   UI React (sin secretos: solo metadatos)
 docs/                  Arquitectura y contratos
@@ -37,7 +40,7 @@ dev/odoo/              Docker compose para pruebas de integración (Odoo 15–19
 
 1. **Los secretos nunca llegan al webview.** Los comandos aceptan secretos como entrada
    (solo escritura) y devuelven únicamente metadatos (`hasSecret: true`).
-2. En Rust, los secretos viven en `secrecy::SecretString` o `appex_vault::SecretField`
+2. En Rust, los secretos viven en `secrecy::SecretString` o `obd_vault::SecretField`
    (Debug redactado, zeroize al soltar). Nunca se registran en logs ni se ponen en URLs.
 3. Todo lo relativo a instancias (URL, BD, usuario, API key, contraseña maestra) y el refresh
    token de Google se guarda **dentro de la bóveda cifrada**. El historial en SQLite guarda solo
@@ -45,25 +48,25 @@ dev/odoo/              Docker compose para pruebas de integración (Odoo 15–19
 4. Las llamadas al llavero y Argon2id son bloqueantes → `tokio::task::spawn_blocking`.
 5. CSP estricta, capabilities mínimas y lista explícita de comandos (`build.rs` → `AppManifest`).
 
-## Bóveda (`appex-vault`)
+## Bóveda (`obd-vault`)
 
 - DEK aleatoria de 32 bytes. Formato del archivo `vault.bin` (versión 1):
 
 ```
-magic "APXVAULT" (8) | version u8 = 1 | flags u8 (bit0 keychain, bit1 password)
+magic "OBDVAULT" (8) | version u8 = 1 | flags u8 (bit0 keychain, bit1 password)
 m_cost_kib u32 LE | t_cost u32 LE | parallelism u32 LE | salt [16]
 dek_nonce [24] | wrapped_dek [48]   (ceros si no hay contraseña)
 payload_nonce [24]
 ciphertext (XChaCha20-Poly1305, AAD = todos los bytes anteriores)
 ```
 
-- `wrapped_dek` = XChaCha20-Poly1305(key = Argon2id(password, salt), AAD = `"APXVAULT-dek-v1"`).
+- `wrapped_dek` = XChaCha20-Poly1305(key = Argon2id(password, salt), AAD = `"OBDVAULT-dek-v1"`).
 - El llavero guarda la DEK en base64 (≈44 caracteres; cabe en el límite de 2560 bytes de Windows).
-  Servicio `lat.appex.backup`, cuenta `vault-dek`.
+  Servicio `io.github.drkpkg.odoo-backup-desktop`, cuenta `vault-dek`.
 - Escritura atómica (tmp + fsync + rename), permisos `0600` en Unix.
 - Desbloqueo: intenta llavero → si no está o no coincide, pide contraseña maestra.
 
-## Odoo (`appex-odoo`)
+## Odoo (`obd-odoo`)
 
 ### Detección de versión y protocolo
 
@@ -77,9 +80,9 @@ ciphertext (XChaCha20-Poly1305, AAD = todos los bytes anteriores)
 | Transporte | Requisitos | Notas |
 |---|---|---|
 | `DbManager` | `list_db = True` + contraseña maestra | `POST /web/database/backup` (`master_pwd`, `name`, `backup_format=zip`, `filestore` solo en ≥19). Errores llegan como HTTP 200 con HTML → validar `Content-Type` y firma `PK\x03\x04`. Sin `Content-Length`. |
-| `AppexModule` | módulo `appex_backup` instalado + API key | Funciona con `list_db = False`. Generación asíncrona, descarga reanudable con `Range`, `sha256` verificado. |
+| `ObdModule` | módulo `obd_backup` instalado + API key | Funciona con `list_db = False`. Generación asíncrona, descarga reanudable con `Range`, `sha256` verificado. |
 
-Selección `Auto` (en la app): módulo disponible → `AppexModule`; si no, `DbManager` si
+Selección `Auto` (en la app): módulo disponible → `ObdModule`; si no, `DbManager` si
 `list_db` está activo y hay contraseña maestra; si no, error guiado.
 
 ### Validación del zip
@@ -87,7 +90,7 @@ Selección `Auto` (en la app): módulo disponible → `AppexModule`; si no, `DbM
 CRC de todas las entradas, `dump.sql` presente y terminado en
 `-- PostgreSQL database dump complete`, `manifest.json` válido y `db_name` esperado.
 
-## Almacenamiento (`appex-storage`)
+## Almacenamiento (`obd-storage`)
 
 - `StorageAdapter`: `ensure_target`, `upload` (streaming, cancelable, progreso),
   `list_backups`, `delete`. Retención común (`keep_last`, `max_age_days`), nunca borra el más nuevo.
@@ -151,7 +154,7 @@ Evento global: `vault-locked` (payload `{ reason: "manual" | "idle" }`) cuando l
 
 ```ts
 type SecretKind = "password" | "api_key";
-type TransportPreference = "auto" | "db_manager" | "appex_module";
+type TransportPreference = "auto" | "db_manager" | "obd_module";
 type ProtocolPreference = "auto" | "xml_rpc" | "json2";
 
 type InstanceView = {
@@ -193,7 +196,7 @@ type ProbeReport = {
   protocol: "xml_rpc" | "json2" | null; uid: number | null;
   auth: CheckStatus; module: CheckStatus; moduleApiVersion: number | null;
   dbManager: CheckStatus;
-  recommendedTransport: "db_manager" | "appex_module" | null;
+  recommendedTransport: "db_manager" | "obd_module" | null;
   warnings: ("insecure_http" | "unsupported_version" | "deprecated_xml_rpc"
     | "database_derived_from_host" | "master_password_over_wire")[];
   checkedAt: string;
@@ -215,7 +218,7 @@ type BackupStage = "requesting" | "server_preparing" | "downloading" | "validati
   | "uploading" | "retention";
 
 type BackupEvent =
-  | { type: "started"; jobId: string; instanceId: string; transport: "db_manager" | "appex_module" }
+  | { type: "started"; jobId: string; instanceId: string; transport: "db_manager" | "obd_module" }
   | { type: "progress"; jobId: string; stage: BackupStage;
       elapsedSecs?: number; received?: number; total?: number | null; sent?: number }
   | { type: "completed"; jobId: string; entry: HistoryEntry }
@@ -228,7 +231,7 @@ type ActiveJob = { jobId: string; instanceId: string; stage: BackupStage; starte
 type HistoryEntry = {
   id: string; instanceId: string; instanceName: string;
   status: "running" | "success" | "failed" | "cancelled";
-  transport: "db_manager" | "appex_module" | null;
+  transport: "db_manager" | "obd_module" | null;
   startedAt: string; finishedAt: string | null;
   filePath: string | null; sizeBytes: number | null; sha256: string | null;
   odooVersion: string | null;
@@ -283,16 +286,16 @@ backups que quedaron a medias porque la app se cerró.
 | Suite | Comando | Qué cubre |
 |---|---|---|
 | Unitarias Rust | `cargo test --workspace` | Crates + capa de la app |
-| Contrato IPC | `cargo test -p appex-backup --test ipc` | Comandos reales vía runtime simulado de Tauri, `tauri.conf.json` y capabilities reales, secretos nunca expuestos |
+| Contrato IPC | `cargo test -p odoo-backup-desktop --test ipc` | Comandos reales vía runtime simulado de Tauri, `tauri.conf.json` y capabilities reales, secretos nunca expuestos |
 | Odoo real (Docker) | `dev/odoo/run-integration.sh` | Cliente Odoo contra 15/17/19 (con y sin `list_db`) |
-| App ↔ Odoo real | `IT_COMMAND='cargo test -p appex-backup --test ipc -- --ignored' dev/odoo/run-integration.sh` | Backup completo por comandos IPC, retención local |
+| App ↔ Odoo real | `IT_COMMAND='cargo test -p odoo-backup-desktop --test ipc -- --ignored' dev/odoo/run-integration.sh` | Backup completo por comandos IPC, retención local |
 | Frontend | `pnpm test`, `pnpm typecheck`, `pnpm build` | Utilidades, mapeo de errores, formularios, mock |
 
 ## Archivos de la app
 
 | Archivo | Ubicación (Linux / Windows) | Contenido |
 |---|---|---|
-| `vault.bin` | `~/.local/share/lat.appex.backup/` · `%APPDATA%\lat.appex.backup\` | Bóveda cifrada |
+| `vault.bin` | `~/.local/share/io.github.drkpkg.odoo-backup-desktop/` · `%APPDATA%\io.github.drkpkg.odoo-backup-desktop\` | Bóveda cifrada |
 | `settings.json` | igual | Ajustes no secretos |
 | `history.sqlite3` | igual | Historial de backups |
 | `logs/` | `app_log_dir` | Logs rotados (sin secretos) |

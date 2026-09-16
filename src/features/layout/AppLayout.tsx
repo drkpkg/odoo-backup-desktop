@@ -50,7 +50,7 @@ export function AppLayout({
         <div className="flex items-center gap-2.5 px-4 pt-5 pb-6">
           <Logo size={28} />
           <div className="leading-tight">
-            <p className="text-[15px] font-semibold tracking-tight">Appex Backup</p>
+            <p className="text-[15px] font-semibold tracking-tight">Odoo Backup Desktop</p>
             <p className="text-[11px] text-subtle">Backups de Odoo</p>
           </div>
         </div>

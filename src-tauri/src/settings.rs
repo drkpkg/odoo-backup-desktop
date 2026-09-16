@@ -18,7 +18,7 @@ pub struct DriveSettings {
 impl Default for DriveSettings {
     fn default() -> Self {
         Self {
-            root_folder_name: "Appex Backup".into(),
+            root_folder_name: "Odoo Backup Desktop".into(),
             keep_last: Some(10),
             permanent_delete: false,
             shared_drive_id: None,
@@ -125,7 +125,7 @@ mod tests {
         assert_eq!(settings.server_prepare_timeout_minutes, 5);
         assert_eq!(settings.keep_last_local, None);
         assert_eq!(settings.auto_lock_minutes, None);
-        assert_eq!(settings.drive.root_folder_name, "Appex Backup");
+        assert_eq!(settings.drive.root_folder_name, "Odoo Backup Desktop");
         assert_eq!(settings.drive.shared_drive_id, None);
     }
 

@@ -5,13 +5,13 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use appex_odoo::{
-    AppexModuleTransport, BackupPhase, BackupRequest, BackupTransport, Credentials, DbManagerTransport,
-    DownloadedBackup, OdooRpc, OdooVersion, SecretKind, TransportKind,
-};
-use appex_storage::local::LocalFolderAdapter;
-use appex_storage::{RetentionPolicy, StorageAdapter, StorageError, TargetSpec, UploadMeta, apply_retention};
 use chrono::Utc;
+use obd_odoo::{
+    BackupPhase, BackupRequest, BackupTransport, Credentials, DbManagerTransport, DownloadedBackup, ObdModuleTransport,
+    OdooRpc, OdooVersion, SecretKind, TransportKind,
+};
+use obd_storage::local::LocalFolderAdapter;
+use obd_storage::{RetentionPolicy, StorageAdapter, StorageError, TargetSpec, UploadMeta, apply_retention};
 use serde::Serialize;
 use serde_json::{Map, Value};
 use tauri::ipc::Channel;
@@ -187,17 +187,17 @@ impl<R: Runtime> Job<R> {
         self.progress(BackupStage::Requesting);
 
         let base_url = parse_base_url(&instance.url)?;
-        let version = cancellable(&self.cancel, appex_odoo::detect_version(&http, &base_url)).await??;
+        let version = cancellable(&self.cancel, obd_odoo::detect_version(&http, &base_url)).await??;
         if !version.is_supported() {
-            return Err(appex_odoo::OdooError::UnsupportedVersion(version.label()).into());
+            return Err(obd_odoo::OdooError::UnsupportedVersion(version.label()).into());
         }
 
         let credentials = credentials(instance);
         let rpc = match &credentials {
             Some(credentials) => {
-                let protocol = appex_odoo::select_protocol(&version, instance.protocol, credentials.kind)
-                    .or_else(|_| appex_odoo::select_protocol(&version, Default::default(), credentials.kind))?;
-                Some(appex_odoo::connect(
+                let protocol = obd_odoo::select_protocol(&version, instance.protocol, credentials.kind)
+                    .or_else(|_| obd_odoo::select_protocol(&version, Default::default(), credentials.kind))?;
+                Some(obd_odoo::connect(
                     http.clone(),
                     base_url.clone(),
                     instance.database.clone(),
@@ -223,14 +223,14 @@ impl<R: Runtime> Job<R> {
                     prepare_timeout,
                 ))
             }
-            TransportKind::AppexModule => {
+            TransportKind::ObdModule => {
                 let (Some(rpc), Some(credentials)) = (rpc.clone(), credentials.as_ref()) else {
-                    return Err(CommandError::new("api_key_required", "the appex_backup module needs an API key"));
+                    return Err(CommandError::new("api_key_required", "the obd_backup module needs an API key"));
                 };
                 if credentials.kind != SecretKind::ApiKey {
-                    return Err(CommandError::new("api_key_required", "the appex_backup module needs an API key"));
+                    return Err(CommandError::new("api_key_required", "the obd_backup module needs an API key"));
                 }
-                Box::new(AppexModuleTransport::new(
+                Box::new(ObdModuleTransport::new(
                     rpc,
                     http.clone(),
                     base_url.clone(),
@@ -277,18 +277,18 @@ impl<R: Runtime> Job<R> {
             && let Some(rpc) = rpc
             && module_available(rpc, &self.cancel).await
         {
-            return Ok(TransportKind::AppexModule);
+            return Ok(TransportKind::ObdModule);
         }
         if self.instance.master_password.as_ref().is_some_and(|p| !p.is_empty()) {
             return Ok(TransportKind::DbManager);
         }
         Err(CommandError::new(
             "no_transport_available",
-            "neither the appex_backup module (API key) nor the database manager (master password) is available",
+            "neither the obd_backup module (API key) nor the database manager (master password) is available",
         ))
     }
 
-    fn phase_reporter(&self) -> appex_odoo::ProgressFn {
+    fn phase_reporter(&self) -> obd_odoo::ProgressFn {
         let app = self.app.clone();
         let channel = self.channel.clone();
         let job_id = self.job_id.clone();
@@ -407,7 +407,7 @@ impl<R: Runtime> Job<R> {
         let job_id = self.job_id.clone();
         let app = self.app.clone();
         let last = Arc::new(Mutex::new(Instant::now() - PROGRESS_THROTTLE));
-        let progress: appex_storage::UploadProgressFn = Arc::new(move |sent, total| {
+        let progress: obd_storage::UploadProgressFn = Arc::new(move |sent, total| {
             if let Ok(mut last) = last.lock() {
                 if sent < total && last.elapsed() < PROGRESS_THROTTLE {
                     return;
@@ -501,11 +501,11 @@ pub fn credentials(instance: &InstanceRecord) -> Option<Credentials> {
 }
 
 async fn module_available(rpc: &dyn OdooRpc, cancel: &CancellationToken) -> bool {
-    let call = rpc.call("appex.backup.api", "get_info", &[], Map::new());
+    let call = rpc.call("obd.backup.api", "get_info", &[], Map::new());
     match cancellable(cancel, call).await {
         Ok(Ok(info)) => info.get("api_version").and_then(Value::as_u64) == Some(1),
         Ok(Err(err)) => {
-            tracing::debug!(code = err.code(), "appex_backup module not available");
+            tracing::debug!(code = err.code(), "obd_backup module not available");
             false
         }
         Err(_) => false,
@@ -584,10 +584,10 @@ mod tests {
             serde_json::json!({"type": "progress", "jobId": "j", "stage": "downloading", "received": 10, "total": null})
         );
         let event =
-            BackupEvent::Started { job_id: "j".into(), instance_id: "i".into(), transport: TransportKind::AppexModule };
+            BackupEvent::Started { job_id: "j".into(), instance_id: "i".into(), transport: TransportKind::ObdModule };
         assert_eq!(
             serde_json::to_value(&event).unwrap(),
-            serde_json::json!({"type": "started", "jobId": "j", "instanceId": "i", "transport": "appex_module"})
+            serde_json::json!({"type": "started", "jobId": "j", "instanceId": "i", "transport": "obd_module"})
         );
     }
 

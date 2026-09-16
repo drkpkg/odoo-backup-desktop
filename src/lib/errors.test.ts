@@ -28,7 +28,7 @@ describe("toAppError", () => {
 describe("messages", () => {
   it("maps known codes to Spanish", () => {
     expect(messageForCode("db_manager_disabled")).toContain("list_db");
-    expect(messageForCode("module_not_installed")).toContain("appex_backup");
+    expect(messageForCode("module_not_installed")).toContain("obd_backup");
     expect(messageForCode("storage_auth_expired")).toContain("Google Drive");
     expect(errorMessage({ code: "authentication_failed", message: "x" })).toBe(ERROR_MESSAGES.authentication_failed);
   });
@@ -39,15 +39,15 @@ describe("messages", () => {
 
   it("covers every error code declared by the Rust crates", () => {
     const rustCodes = [
-      // appex-vault
+      // obd-vault
       "vault_not_found", "vault_exists", "vault_wrong_password", "vault_password_not_enabled", "keychain_unavailable",
       "keychain_key_missing", "keychain_key_mismatch", "vault_corrupted", "vault_unsupported_version",
       "vault_invalid_options", "keychain_error", "vault_serde", "io",
-      // appex-odoo
+      // obd-odoo
       "invalid_url", "connection", "timeout", "http_status", "version_detection", "unsupported_version",
       "unsupported_protocol", "authentication_failed", "access_denied", "db_manager_disabled", "module_not_installed",
       "module_api_incompatible", "rpc", "server_backup_error", "prepare_timeout", "invalid_backup", "protocol", "cancelled",
-      // appex-storage
+      // obd-storage
       "storage_not_configured", "storage_auth_expired", "storage_authorization_denied", "storage_quota_exceeded",
       "storage_rate_limited", "storage_not_found", "storage_transient", "storage_fatal",
     ];

@@ -1,12 +1,12 @@
 ---
 name: odoo-remote-backup
-description: Use when working on crates/appex-odoo or anything that talks to a remote Odoo 15.0–19.0 server — version detection, XML-RPC vs JSON-2 selection, authentication, the /web/database/backup (DbManager) transport, the appex_backup module transport, probe diagnostics, backup zip validation, or the Docker integration tests in dev/odoo.
+description: Use when working on crates/obd-odoo or anything that talks to a remote Odoo 15.0–19.0 server — version detection, XML-RPC vs JSON-2 selection, authentication, the /web/database/backup (DbManager) transport, the obd_backup module transport, probe diagnostics, backup zip validation, or the Docker integration tests in dev/odoo.
 ---
 
 # Remote Odoo backups (Odoo 15.0–19.0)
 
 Facts below were verified against odoo/odoo source (branches 15.0–19.0 and master) on 2026-09-16
-unless marked *unverified*. Module contract: `docs/appex-backup-module-api.md`.
+unless marked *unverified*. Module contract: `docs/obd-backup-module-api.md`.
 
 ## Version detection (no credentials)
 
@@ -62,10 +62,10 @@ dbfilter). `database_from_host()` derives the default DB name.
   nginx `proxy_read_timeout`, temp disk space. Report them as a diagnostic, the client can't fix them.
 - `list_db` status: `/web/database/list` (JSON-RPC) fails with AccessDenied when disabled.
 
-## AppexModule transport (works with `list_db = False`)
+## ObdModule transport (works with `list_db = False`)
 
-Module `appex_backup` (developed later) exposes `appex.backup.api`: `get_info`, `request_backup`,
-`get_job`, `discard_job` + `GET /appex_backup/download/<job_id>` (bearer API key, `Range`).
+Module `obd_backup` (developed later) exposes `obd.backup.api`: `get_info`, `request_backup`,
+`get_job`, `discard_job` + `GET /obd_backup/download/<job_id>` (bearer API key, `Range`).
 Client flow: check `api_version == 1` → request → poll `get_job` → resumable download (≤5 retries,
 backoff) → verify size + sha256 → validate zip → rename → discard. Needs an **API key**.
 Server-side notes for the future module: `Stream`/vendored `send_file` supports Range from 16

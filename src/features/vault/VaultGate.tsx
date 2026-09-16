@@ -27,7 +27,7 @@ function GateShell({ children }: { children: ReactNode }) {
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-center gap-2.5">
           <Logo size={34} />
-          <span className="text-lg font-semibold tracking-tight">Appex Backup</span>
+          <span className="text-lg font-semibold tracking-tight">Odoo Backup Desktop</span>
         </div>
         <div className="rounded-xl border border-border bg-surface p-6 shadow-card">{children}</div>
       </div>

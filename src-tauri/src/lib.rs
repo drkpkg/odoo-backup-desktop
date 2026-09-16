@@ -1,4 +1,4 @@
-//! Appex Backup desktop application (Tauri 2).
+//! Odoo Backup Desktop desktop application (Tauri 2).
 
 mod backup;
 mod commands;
@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
-use appex_vault::{KdfParams, KeyStore, OsKeyStore, VaultFile};
+use obd_vault::{KdfParams, KeyStore, OsKeyStore, VaultFile};
 use tauri::{AppHandle, Manager, Runtime};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::layer::SubscriberExt;
@@ -36,7 +36,7 @@ struct LogGuard(#[allow(dead_code)] WorkerGuard);
 pub struct AppOptions {
     /// Replaces the platform app data directory.
     pub data_dir: Option<PathBuf>,
-    /// Replaces the default download directory (`~/Downloads/Appex Backup`).
+    /// Replaces the default download directory (`~/Downloads/Odoo Backup Desktop`).
     pub download_dir: Option<PathBuf>,
     /// Replaces the OS keychain.
     pub keystore: Option<Arc<dyn KeyStore>>,
@@ -60,7 +60,7 @@ pub fn run() {
         }));
     app_builder(builder, AppOptions::default())
         .run(tauri::generate_context!())
-        .expect("error while running Appex Backup");
+        .expect("error while running Odoo Backup Desktop");
 }
 
 /// Plugins, state setup and command handlers, shared by the app and the IPC tests.
@@ -114,14 +114,14 @@ fn setup<R: Runtime>(app: &AppHandle<R>, options: AppOptions) -> Result<(), Box<
     }
 
     let app_version = app.package_info().version.to_string();
-    tracing::info!(version = %app_version, "starting Appex Backup");
+    tracing::info!(version = %app_version, "starting Odoo Backup Desktop");
 
     let paths = AppPaths::new(data_dir);
     let default_download_dir = options.download_dir.unwrap_or_else(|| {
         app.path()
             .download_dir()
             .or_else(|_| app.path().home_dir())
-            .map(|dir| dir.join("Appex Backup"))
+            .map(|dir| dir.join("Odoo Backup Desktop"))
             .unwrap_or_else(|_| paths.data_dir.join("backups"))
     });
     let settings = settings::load(&paths.settings_file, &default_download_dir);
@@ -129,7 +129,7 @@ fn setup<R: Runtime>(app: &AppHandle<R>, options: AppOptions) -> Result<(), Box<
     let keystore: Arc<dyn KeyStore> = match options.keystore {
         Some(keystore) => keystore,
         None => {
-            if let Err(err) = appex_vault::init_os_keystore() {
+            if let Err(err) = obd_vault::init_os_keystore() {
                 tracing::warn!(code = err.code(), "OS keychain not available; the master password will be required");
             }
             Arc::new(OsKeyStore::new(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT))
@@ -182,14 +182,14 @@ fn spawn_auto_lock<R: Runtime>(app: AppHandle<R>) {
 fn init_logging(log_dir: &std::path::Path) -> WorkerGuard {
     let file_appender = tracing_appender::rolling::Builder::new()
         .rotation(tracing_appender::rolling::Rotation::DAILY)
-        .filename_prefix("appex-backup")
+        .filename_prefix("odoo-backup-desktop")
         .filename_suffix("log")
         .max_log_files(14)
         .build(log_dir)
-        .unwrap_or_else(|_| tracing_appender::rolling::never(log_dir, "appex-backup.log"));
+        .unwrap_or_else(|_| tracing_appender::rolling::never(log_dir, "odoo-backup-desktop.log"));
     let (writer, guard) = tracing_appender::non_blocking(file_appender);
 
-    let level = std::env::var("APPEX_LOG_LEVEL").unwrap_or_else(|_| "info".into());
+    let level = std::env::var("OBD_LOG_LEVEL").unwrap_or_else(|_| "info".into());
     let filter = tracing_subscriber::EnvFilter::try_new(format!("{level},hyper=warn,reqwest=warn"))
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
 

@@ -3,14 +3,14 @@
 //! temporary directories.
 //!
 //! `backup_against_real_odoo` is ignored: run it with
-//! `IT_COMMAND='cargo test -p appex-backup --test ipc -- --ignored --nocapture' dev/odoo/run-integration.sh`.
+//! `IT_COMMAND='cargo test -p odoo-backup-desktop --test ipc -- --ignored --nocapture' dev/odoo/run-integration.sh`.
 
 use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use appex_backup_lib::{AppOptions, app_builder};
-use appex_vault::{KdfParams, MemoryKeyStore};
+use obd_vault::{KdfParams, MemoryKeyStore};
+use odoo_backup_desktop_lib::{AppOptions, app_builder};
 use serde_json::{Value, json};
 use tauri::test::{INVOKE_KEY, MockRuntime, get_ipc_response, mock_builder};
 use tauri::webview::InvokeRequest;
@@ -267,17 +267,17 @@ fn run_backup(app: &TestApp, instance: Value) -> Value {
 fn backup_against_real_odoo() {
     let app = test_app(true);
     ok(&app, "create_vault", json!({ "useKeychain": true }));
-    let master = it_env("APPEX_IT_MASTER_PASSWORD");
+    let master = it_env("OBD_IT_MASTER_PASSWORD");
 
     let cases = [
-        ("Odoo 15", it_env("APPEX_IT_ODOO15_URL"), "it15", "password", it_env("APPEX_IT_ADMIN_PASSWORD"), "15.0"),
-        ("Odoo 17", it_env("APPEX_IT_ODOO17_URL"), "it17", "password", it_env("APPEX_IT_ADMIN_PASSWORD"), "17.0"),
-        ("Odoo 19", it_env("APPEX_IT_ODOO19_URL"), "it19", "api_key", it_env("APPEX_IT_ODOO19_API_KEY"), "19.0"),
+        ("Odoo 15", it_env("OBD_IT_ODOO15_URL"), "it15", "password", it_env("OBD_IT_ADMIN_PASSWORD"), "15.0"),
+        ("Odoo 17", it_env("OBD_IT_ODOO17_URL"), "it17", "password", it_env("OBD_IT_ADMIN_PASSWORD"), "17.0"),
+        ("Odoo 19", it_env("OBD_IT_ODOO19_URL"), "it19", "api_key", it_env("OBD_IT_ODOO19_API_KEY"), "19.0"),
     ];
     for (name, url, db, kind, secret, version) in cases {
         let entry = run_backup(
             &app,
-            json!({ "name": name, "url": url, "database": db, "login": it_env("APPEX_IT_ADMIN_LOGIN"),
+            json!({ "name": name, "url": url, "database": db, "login": it_env("OBD_IT_ADMIN_LOGIN"),
                 "secretKind": kind, "secret": secret, "masterPassword": master,
                 "transport": "auto", "protocol": "auto", "includeFilestore": true, "uploadToDrive": false }),
         );
@@ -294,8 +294,8 @@ fn backup_against_real_odoo() {
     // list_db = False: the database manager is blocked and there is no module either.
     let entry = run_backup(
         &app,
-        json!({ "name": "Odoo 19 sin list_db", "url": it_env("APPEX_IT_ODOO19_NOLIST_URL"), "database": "it19",
-            "login": it_env("APPEX_IT_ADMIN_LOGIN"), "secretKind": "api_key", "secret": it_env("APPEX_IT_ODOO19_API_KEY"),
+        json!({ "name": "Odoo 19 sin list_db", "url": it_env("OBD_IT_ODOO19_NOLIST_URL"), "database": "it19",
+            "login": it_env("OBD_IT_ADMIN_LOGIN"), "secretKind": "api_key", "secret": it_env("OBD_IT_ODOO19_API_KEY"),
             "masterPassword": master, "transport": "auto", "protocol": "auto", "includeFilestore": true, "uploadToDrive": false }),
     );
     assert_eq!(entry["status"], "failed");

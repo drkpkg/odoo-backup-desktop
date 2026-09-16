@@ -18,12 +18,12 @@ export const SECRET_KIND_LABELS: Record<SecretKind, string> = {
 export const TRANSPORT_PREFERENCE_LABELS: Record<TransportPreference, string> = {
   auto: "Automático",
   db_manager: "Gestor de BD",
-  appex_module: "Módulo appex_backup",
+  obd_module: "Módulo obd_backup",
 };
 
 export const TRANSPORT_LABELS: Record<TransportKind, string> = {
   db_manager: "Gestor de BD",
-  appex_module: "Módulo appex_backup",
+  obd_module: "Módulo obd_backup",
 };
 
 export const PROTOCOL_PREFERENCE_LABELS: Record<ProtocolPreference, string> = {
@@ -76,7 +76,7 @@ export const PROBE_WARNINGS: Record<ProbeWarning, WarningInfo> = {
   },
   unsupported_version: {
     title: "Versión no soportada",
-    detail: "Appex Backup admite Odoo 15.0 a 19.0. Otras versiones pueden fallar.",
+    detail: "Odoo Backup Desktop admite Odoo 15.0 a 19.0. Otras versiones pueden fallar.",
     severity: "warning",
   },
   deprecated_xml_rpc: {

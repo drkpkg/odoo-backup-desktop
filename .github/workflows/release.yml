@@ -3,7 +3,7 @@ name: Release
 # Builds installers and attaches them to a *draft* GitHub Release.
 #   Linux  (ubuntu-22.04): .deb, .rpm, AppImage (Wayland libs stripped)
 #   Windows (windows-latest): NSIS -setup.exe
-#   Arch   (archlinux container): appex-backup-bin .pkg.tar.zst + PKGBUILD/.SRCINFO
+#   Arch   (archlinux container): odoo-backup-desktop-bin .pkg.tar.zst + PKGBUILD/.SRCINFO
 #
 # Cut a release: bump package.json + Cargo.toml versions, push tag vX.Y.Z.
 # Review the draft release, then publish it.
@@ -46,9 +46,9 @@ jobs:
           REPO: ${{ github.repository }}
           BODY: |
             Instaladores:
-            - Ubuntu/Debian: `appex-backup_*_amd64.deb`
-            - Fedora/openSUSE: `appex-backup_*_x86_64.rpm`
-            - Arch Linux: `appex-backup-bin-*.pkg.tar.zst` (o AUR `appex-backup-bin`)
+            - Ubuntu/Debian: `odoo-backup-desktop_*_amd64.deb`
+            - Fedora/openSUSE: `odoo-backup-desktop_*_x86_64.rpm`
+            - Arch Linux: `odoo-backup-desktop-bin-*.pkg.tar.zst` (o AUR `odoo-backup-desktop-bin`)
             - Linux genérico: `.AppImage` (mejor esfuerzo; en Wayland preferir .deb/Arch)
             - Windows: `*-setup.exe`
         run: |
@@ -57,7 +57,7 @@ jobs:
             --jq ".[] | select(.tag_name == \"${RELEASE_TAG}\") | .id" | head -n 1)"
           if [[ -z ${id} ]]; then
             id="$(gh api --method POST "repos/${REPO}/releases" \
-              -f tag_name="${RELEASE_TAG}" -f name="Appex Backup ${RELEASE_TAG}" -f body="${BODY}" \
+              -f tag_name="${RELEASE_TAG}" -f name="Odoo Backup Desktop ${RELEASE_TAG}" -f body="${BODY}" \
               -F draft=true -F prerelease=false --jq .id)"
           fi
           echo "id=${id}" >> "$GITHUB_OUTPUT"
@@ -163,7 +163,7 @@ jobs:
           echo "replaced ${asset_name}"
 
   arch-package:
-    name: Arch package (appex-backup-bin)
+    name: Arch package (odoo-backup-desktop-bin)
     needs: [create-release, bundle]
     runs-on: ubuntu-latest
     container: archlinux:latest
@@ -192,7 +192,7 @@ jobs:
           pkgver="${version//-/_}"
 
           build_dir="$(mktemp -d)"
-          cp packaging/aur/appex-backup-bin/PKGBUILD "${build_dir}/PKGBUILD"
+          cp packaging/aur/odoo-backup-desktop-bin/PKGBUILD "${build_dir}/PKGBUILD"
 
           deb_url="$(gh api "repos/${REPO}/releases/${RELEASE_ID}/assets" --paginate \
             --jq '.[] | select(.name | endswith("_amd64.deb")) | .url' | head -n 1)"
@@ -201,9 +201,9 @@ jobs:
             exit 1
           fi
           # makepkg uses this local file (name matches the source entry) instead of downloading.
-          gh api -H "Accept: application/octet-stream" "${deb_url}" > "${build_dir}/appex-backup-${pkgver}-x86_64.deb"
+          gh api -H "Accept: application/octet-stream" "${deb_url}" > "${build_dir}/odoo-backup-desktop-${pkgver}-x86_64.deb"
 
-          sha="$(sha256sum "${build_dir}/appex-backup-${pkgver}-x86_64.deb" | cut -d' ' -f1)"
+          sha="$(sha256sum "${build_dir}/odoo-backup-desktop-${pkgver}-x86_64.deb" | cut -d' ' -f1)"
           sed -i \
             -e "s/^pkgver=.*/pkgver=${pkgver}/" \
             -e "s/^pkgrel=.*/pkgrel=1/" \
@@ -216,8 +216,8 @@ jobs:
 
           mkdir -p out
           cp "${build_dir}"/*.pkg.tar.zst out/
-          cp "${build_dir}/PKGBUILD" out/appex-backup-bin.PKGBUILD
-          cp "${build_dir}/.SRCINFO" out/appex-backup-bin.SRCINFO
+          cp "${build_dir}/PKGBUILD" out/odoo-backup-desktop-bin.PKGBUILD
+          cp "${build_dir}/.SRCINFO" out/odoo-backup-desktop-bin.SRCINFO
           ls -la out
 
       - name: Upload Arch assets to the release

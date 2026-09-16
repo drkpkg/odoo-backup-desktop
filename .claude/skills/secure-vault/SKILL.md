@@ -1,6 +1,6 @@
 ---
 name: secure-vault
-description: Use when touching crates/appex-vault or any code that stores, loads, passes or displays credentials in Appex Backup — vault file format, encryption/KDF parameters, OS keychain (keyring-core), master password flows, SecretField/SecretString handling, logging or IPC of secrets.
+description: Use when touching crates/obd-vault or any code that stores, loads, passes or displays credentials in Odoo Backup Desktop — vault file format, encryption/KDF parameters, OS keychain (keyring-core), master password flows, SecretField/SecretString handling, logging or IPC of secrets.
 ---
 
 # Encrypted vault and secret handling
@@ -19,7 +19,7 @@ over-promise.
 | DEK | 32 random bytes (`getrandom` 0.4), held in `Zeroizing` while unlocked |
 | Password KDF | Argon2id (`argon2` 0.6), default m = 64 MiB, t = 3, p = 1, 16-byte salt (RFC 9106 2nd option; above OWASP minimum 19 MiB/t=2) |
 | Keychain | `keyring-core` 1.0 + `zbus-secret-service-keyring-store` 1.0.1 (`rt-async-io-crypto-rust`; never `rt-tokio-*`, see `tauri2-desktop` skill) on Linux, `windows-native-keyring-store` 1.1 on Windows, `apple-native-keyring-store` 1.0 on macOS |
-| Secrets in memory | `secrecy` 0.10 `SecretString` for call arguments, `appex_vault::SecretField` inside the payload, `zeroize` 1.9 |
+| Secrets in memory | `secrecy` 0.10 `SecretString` for call arguments, `obd_vault::SecretField` inside the payload, `zeroize` 1.9 |
 
 Not used on purpose: SQLCipher (overkill, OpenSSL pain on Windows), Stronghold (being removed),
 `age` (scrypt, not Argon2), JS-exposed keyring plugins.
@@ -27,14 +27,14 @@ Not used on purpose: SQLCipher (overkill, OpenSSL pain on Windows), Stronghold (
 ## File format v1 (`vault.bin`)
 
 ```
-"APXVAULT" | version u8 = 1 | flags u8 (bit0 keychain, bit1 password)
+"OBDVAULT" | version u8 = 1 | flags u8 (bit0 keychain, bit1 password)
 m_cost_kib u32 LE | t_cost u32 LE | parallelism u32 LE | salt [16]
 dek_nonce [24] | wrapped_dek [48]        (zeros when no password)
 payload_nonce [24]
 ciphertext                               (AAD = every byte before it)
 ```
 
-- `wrapped_dek` = XChaCha20-Poly1305(Argon2id(password, salt), AAD `"APXVAULT-dek-v1"`).
+- `wrapped_dek` = XChaCha20-Poly1305(Argon2id(password, salt), AAD `"OBDVAULT-dek-v1"`).
 - Header is authenticated through the payload AAD → flipping flags/params = `Corrupted`.
 - Unknown version → `UnsupportedVersion`. Bump the version for any layout change and keep a reader
   for old versions.
@@ -43,7 +43,7 @@ ciphertext                               (AAD = every byte before it)
 
 ## Keychain rules
 
-- Store only the DEK as base64 (≈44 chars) under service `lat.appex.backup`, account `vault-dek`.
+- Store only the DEK as base64 (≈44 chars) under service `io.github.drkpkg.odoo-backup-desktop`, account `vault-dek`.
   Windows Credential Manager blobs max out at 2560 bytes (UTF-16 → ~1280 chars): never store tokens
   or the payload there.
 - Linux Secret Service may be missing (i3/Hyprland/headless) or locked; KDE Plasma 6 provides it via

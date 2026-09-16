@@ -1,6 +1,6 @@
 [package]
-name = "appex-backup"
-description = "Appex Backup: backups de instancias Odoo"
+name = "odoo-backup-desktop"
+description = "Odoo Backup Desktop: backups de instancias Odoo"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -10,16 +10,16 @@ publish = false
 
 [lib]
 # The `_lib` suffix avoids a name clash between the lib and bin targets on Windows.
-name = "appex_backup_lib"
+name = "odoo_backup_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.6", features = [] }
 
 [dependencies]
-appex-odoo.workspace = true
-appex-storage.workspace = true
-appex-vault.workspace = true
+obd-odoo.workspace = true
+obd-storage.workspace = true
+obd-vault.workspace = true
 
 chrono.workspace = true
 reqwest.workspace = true

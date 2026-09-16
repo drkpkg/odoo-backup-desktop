@@ -10,7 +10,7 @@ use crate::jobs::{JobRegistry, Limiter};
 use crate::settings::{self, Settings};
 use crate::vault::VaultManager;
 
-pub const KEYCHAIN_SERVICE: &str = "lat.appex.backup";
+pub const KEYCHAIN_SERVICE: &str = "io.github.drkpkg.odoo-backup-desktop";
 pub const KEYCHAIN_ACCOUNT: &str = "vault-dek";
 
 #[derive(Debug, Clone)]
@@ -64,7 +64,7 @@ impl AppState {
 
 pub fn build_http_client(app_version: &str) -> reqwest::Client {
     reqwest::Client::builder()
-        .user_agent(format!("AppexBackup/{app_version}"))
+        .user_agent(format!("OdooBackupDesktop/{app_version}"))
         .connect_timeout(Duration::from_secs(20))
         .tcp_keepalive(Duration::from_secs(60))
         .build()

@@ -4,8 +4,8 @@
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use appex_odoo::TransportKind;
 use chrono::{DateTime, Utc};
+use obd_odoo::TransportKind;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde::{Deserialize, Serialize};
 
@@ -265,7 +265,7 @@ impl History {
 fn transport_str(kind: TransportKind) -> &'static str {
     match kind {
         TransportKind::DbManager => "db_manager",
-        TransportKind::AppexModule => "appex_module",
+        TransportKind::ObdModule => "obd_module",
     }
 }
 
@@ -285,7 +285,7 @@ fn row_to_entry(row: &Row<'_>) -> rusqlite::Result<HistoryEntry> {
         status: BackupStatus::parse(&row.get::<_, String>("status")?),
         transport: transport.as_deref().and_then(|t| match t {
             "db_manager" => Some(TransportKind::DbManager),
-            "appex_module" => Some(TransportKind::AppexModule),
+            "obd_module" => Some(TransportKind::ObdModule),
             _ => None,
         }),
         started_at: parse_time(Some(started_at)).unwrap_or_else(Utc::now),

@@ -1,9 +1,9 @@
 //! Tauri commands. See `docs/architecture.md` (Contrato IPC). Secrets are accepted
 //! as input only; every response is secret-free.
 
-use appex_odoo::ProbeInput;
-use appex_storage::gdrive::PendingAuthorization;
 use chrono::Utc;
+use obd_odoo::ProbeInput;
+use obd_storage::gdrive::PendingAuthorization;
 use secrecy::SecretString;
 use serde::Deserialize;
 use tauri::ipc::{Channel, InvokeBody, Request};
@@ -133,7 +133,7 @@ pub async fn save_instance(state: State<'_, AppState>, input: InstanceInput) -> 
     }
     let base_url = backup::parse_base_url(&input.url)?;
     let database = non_empty(Some(input.database.clone()))
-        .or_else(|| appex_odoo::database_from_host(&base_url))
+        .or_else(|| obd_odoo::database_from_host(&base_url))
         .ok_or_else(|| CommandError::invalid_input("database is required"))?;
     let secret = non_empty(input.secret.clone());
     let master_password = input.master_password.clone();
@@ -142,9 +142,9 @@ pub async fn save_instance(state: State<'_, AppState>, input: InstanceInput) -> 
         state
             .vault
             .update(move |data| {
-                let slug = appex_storage::local::slugify(&name);
+                let slug = obd_storage::local::slugify(&name);
                 if data.instances.iter().any(|other| {
-                    Some(&other.id) != input.id.as_ref() && appex_storage::local::slugify(&other.name) == slug
+                    Some(&other.id) != input.id.as_ref() && obd_storage::local::slugify(&other.name) == slug
                 }) {
                     return Err(CommandError::new("duplicate_name", "another instance already uses this name"));
                 }
@@ -166,13 +166,13 @@ pub async fn save_instance(state: State<'_, AppState>, input: InstanceInput) -> 
                         record.login = input.login.trim().to_owned();
                         record.secret_kind = input.secret_kind;
                         if let Some(secret) = secret {
-                            record.secret = Some(appex_vault::SecretField::new(secret));
+                            record.secret = Some(obd_vault::SecretField::new(secret));
                         }
                         match master_password {
                             None => {}
                             Some(None) => record.master_password = None,
                             Some(Some(value)) if value.is_empty() => {}
-                            Some(Some(value)) => record.master_password = Some(appex_vault::SecretField::new(value)),
+                            Some(Some(value)) => record.master_password = Some(obd_vault::SecretField::new(value)),
                         }
                         record.transport = input.transport;
                         record.protocol = input.protocol;
@@ -190,11 +190,11 @@ pub async fn save_instance(state: State<'_, AppState>, input: InstanceInput) -> 
                             database,
                             login: input.login.trim().to_owned(),
                             secret_kind: input.secret_kind,
-                            secret: secret.map(appex_vault::SecretField::new),
+                            secret: secret.map(obd_vault::SecretField::new),
                             master_password: master_password
                                 .flatten()
                                 .filter(|v| !v.is_empty())
-                                .map(appex_vault::SecretField::new),
+                                .map(obd_vault::SecretField::new),
                             transport: input.transport,
                             protocol: input.protocol,
                             include_filestore: input.include_filestore,
@@ -252,12 +252,12 @@ pub async fn probe_instance(state: State<'_, AppState>, input: ProbeRequest) -> 
         stored.as_ref().and_then(|s| s.master_password.as_ref()).filter(|s| !s.is_empty()).map(|s| s.to_secret_string())
     });
 
-    let report = appex_odoo::probe(
+    let report = obd_odoo::probe(
         &state.http,
         ProbeInput {
             base_url,
             database: non_empty(input.database.clone()),
-            credentials: secret.map(|secret| appex_odoo::Credentials { login, secret, kind: input.secret_kind }),
+            credentials: secret.map(|secret| obd_odoo::Credentials { login, secret, kind: input.secret_kind }),
             master_password,
             protocol_preference: input.protocol,
         },
@@ -388,7 +388,7 @@ pub async fn set_drive_client(state: State<'_, AppState>, request: Request<'_>) 
                 None => {}
                 Some(None) => drive.client_secret = None,
                 Some(Some(secret)) if secret.trim().is_empty() => drive.client_secret = None,
-                Some(Some(secret)) => drive.client_secret = Some(appex_vault::SecretField::new(secret.trim())),
+                Some(Some(secret)) => drive.client_secret = Some(obd_vault::SecretField::new(secret.trim())),
             }
             Ok(crate::drive::status(drive))
         })
@@ -432,7 +432,7 @@ pub async fn connect_drive<R: Runtime>(app: AppHandle<R>, state: State<'_, AppSt
         .update(move |data| {
             let drive = &mut data.drive;
             drive.refresh_token =
-                Some(appex_vault::SecretField::new(secrecy::ExposeSecret::expose_secret(&account.refresh_token)));
+                Some(obd_vault::SecretField::new(secrecy::ExposeSecret::expose_secret(&account.refresh_token)));
             drive.email = account.email;
             drive.display_name = account.display_name;
             Ok(crate::drive::status(drive))

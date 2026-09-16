@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Builds the Arch package (appex-backup-bin) from a locally built .deb, for testing.
+# Builds the Arch package (odoo-backup-desktop-bin) from a locally built .deb, for testing.
 #
-# Usage: packaging/aur/build-local.sh [path/to/appex-backup.deb]
+# Usage: packaging/aur/build-local.sh [path/to/odoo-backup-desktop.deb]
 # Default .deb: newest file in target/release/bundle/deb/ (run `pnpm tauri build` first).
-# Output: target/release/bundle/arch/appex-backup-bin-<version>-<rel>-x86_64.pkg.tar.zst
+# Output: target/release/bundle/arch/odoo-backup-desktop-bin-<version>-<rel>-x86_64.pkg.tar.zst
 #         (override the directory with OUT_DIR=...)
 set -euo pipefail
 
@@ -15,7 +15,7 @@ command -v bsdtar >/dev/null || die "bsdtar not found (install libarchive)"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/../.." && pwd)"
-pkgbuild_dir="${script_dir}/appex-backup-bin"
+pkgbuild_dir="${script_dir}/odoo-backup-desktop-bin"
 
 deb="${1:-}"
 if [[ -z ${deb} ]]; then
@@ -42,9 +42,9 @@ trap 'rm -rf "${workdir}"' EXIT
 cp "${pkgbuild_dir}/PKGBUILD" "${workdir}/PKGBUILD"
 sed -i "s/^pkgver=.*/pkgver=${pkgver}/" "${workdir}/PKGBUILD"
 # makepkg uses a local file whose name matches the source entry instead of downloading.
-cp "${deb}" "${workdir}/appex-backup-${pkgver}-x86_64.deb"
+cp "${deb}" "${workdir}/odoo-backup-desktop-${pkgver}-x86_64.deb"
 
-log "building appex-backup-bin ${pkgver} from $(basename "${deb}")"
+log "building odoo-backup-desktop-bin ${pkgver} from $(basename "${deb}")"
 (
   cd "${workdir}"
   # --nodeps: runtime deps are not needed to repackage; --skipchecksums: local .deb.

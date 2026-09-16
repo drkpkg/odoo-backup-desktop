@@ -6,7 +6,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
-use appex_vault::{CreateOptions, KdfParams, KeyStore, UnlockMethod, UnlockedVault, VaultFile, VaultInfo};
+use obd_vault::{CreateOptions, KdfParams, KeyStore, UnlockMethod, UnlockedVault, VaultFile, VaultInfo};
 use secrecy::SecretString;
 
 use crate::error::{CommandError, CommandResult};
@@ -85,7 +85,7 @@ impl VaultManager {
     pub async fn create(&self, use_keychain: bool, master_password: Option<SecretString>) -> CommandResult<()> {
         self.blocking(move |this| {
             if use_keychain && !this.keystore.is_available() {
-                return Err(appex_vault::VaultError::KeychainUnavailable.into());
+                return Err(obd_vault::VaultError::KeychainUnavailable.into());
             }
             let data = VaultData::default();
             let options = CreateOptions { use_keychain, master_password, kdf: this.kdf };
@@ -190,7 +190,7 @@ fn status_from(exists: bool, unlocked: bool, keychain_available: bool, info: Opt
 
 #[cfg(test)]
 mod tests {
-    use appex_vault::MemoryKeyStore;
+    use obd_vault::MemoryKeyStore;
 
     use super::*;
     use crate::models::DriveConfig;

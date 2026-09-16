@@ -142,7 +142,7 @@ function InstanceForm({ instance, onClose }: { instance: InstanceView | null; on
           )}
         </Field>
 
-        <Field label="URL" error={errors.url?.message} hint="Ej.: https://cliente.nube-appex.lat">
+        <Field label="URL" error={errors.url?.message} hint="Ej.: https://cliente.nube.example.com">
           {({ id, describedBy, invalid }) => (
             <TextInput id={id} aria-describedby={describedBy} aria-invalid={invalid} placeholder="https://" inputMode="url" spellCheck={false} {...urlField} />
           )}
@@ -218,7 +218,7 @@ function InstanceForm({ instance, onClose }: { instance: InstanceView | null; on
         <fieldset className="space-y-2 rounded-lg border border-border p-3">
           <legend className="px-1 text-[13px] font-medium">Contraseña maestra (gestor de BD)</legend>
           <p className="text-xs text-muted">
-            Solo la usa el transporte Gestor de BD (<code className="font-mono">/web/database/backup</code>). No hace falta con el módulo appex_backup.
+            Solo la usa el transporte Gestor de BD (<code className="font-mono">/web/database/backup</code>). No hace falta con el módulo obd_backup.
           </p>
           {!removeMaster ? (
             <Field label="Contraseña maestra" optional={transport !== "db_manager"} error={errors.masterPassword?.message}>

@@ -1,6 +1,6 @@
-# Odoo 15 / 17 / 19 for appex-odoo integration tests. Use run-integration.sh.
+# Odoo 15 / 17 / 19 for obd-odoo integration tests. Use run-integration.sh.
 # Ports bind to 127.0.0.1 only. Hosts it15/it17/it19.localhost select the database (dbfilter ^%d$).
-name: appex-odoo-it
+name: obd-odoo-it
 
 x-postgres: &postgres
   environment:

@@ -1,9 +1,9 @@
 ---
 name: react-ui
-description: Use when building or changing the Appex Backup frontend in src/ — React 19 + TypeScript screens, typed IPC wrappers for Tauri commands, the browser mock backend, backup progress via Channels, error-code translation to Spanish, forms that handle credentials, styling with Tailwind v4.
+description: Use when building or changing the Odoo Backup Desktop frontend in src/ — React 19 + TypeScript screens, typed IPC wrappers for Tauri commands, the browser mock backend, backup progress via Channels, error-code translation to Spanish, forms that handle credentials, styling with Tailwind v4.
 ---
 
-# React UI conventions (Appex Backup)
+# React UI conventions (Odoo Backup Desktop)
 
 The UI is a thin client over the Rust commands documented in `docs/architecture.md`
 ("Contrato IPC"). It never talks to Odoo or Google directly and never stores secrets.

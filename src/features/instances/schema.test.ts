@@ -17,7 +17,7 @@ function values(patch: Partial<InstanceFormValues> = {}): InstanceFormValues {
   return {
     ...defaultFormValues(null),
     name: "Cliente Uno",
-    url: "https://cliente1.nube-appex.lat/",
+    url: "https://cliente1.nube.example.com/",
     database: "cliente1",
     login: "backup@cliente1.com",
     secretKind: "api_key",
@@ -30,7 +30,7 @@ function existing(patch: Partial<InstanceView> = {}): InstanceView {
   return {
     id: "inst-1",
     name: "Cliente Uno",
-    url: "https://cliente1.nube-appex.lat",
+    url: "https://cliente1.nube.example.com",
     database: "cliente1",
     login: "backup@cliente1.com",
     secretKind: "api_key",
@@ -68,7 +68,7 @@ describe("URL helpers", () => {
   });
 
   it("derives the database from the subdomain like database_from_host", () => {
-    expect(databaseFromUrl("https://cliente1.nube-appex.lat")).toBe("cliente1");
+    expect(databaseFromUrl("https://cliente1.nube.example.com")).toBe("cliente1");
     expect(databaseFromUrl("https://www.cliente1.nube.com/web")).toBe("cliente1");
     expect(databaseFromUrl("https://CLIENTE2.Nube.com")).toBe("cliente2");
     expect(databaseFromUrl("https://miempresa.com")).toBe("miempresa");
@@ -95,8 +95,8 @@ describe("instance form schema", () => {
     expect(issuesFor(values({ secret: "" }), { hasSecret: true, hasMasterPassword: false })).toEqual({});
   });
 
-  it("requires an API key for JSON-2 and the appex_backup module", () => {
-    const issues = issuesFor(values({ secretKind: "password", protocol: "json2", transport: "appex_module" }));
+  it("requires an API key for JSON-2 and the obd_backup module", () => {
+    const issues = issuesFor(values({ secretKind: "password", protocol: "json2", transport: "obd_module" }));
     expect(issues).toHaveProperty("protocol");
     expect(issues).toHaveProperty("transport");
   });
@@ -115,7 +115,7 @@ describe("buildInstanceInput", () => {
     const input = buildInstanceInput(values({ name: "  Cliente Uno ", masterPassword: "master" }));
     expect(input).toEqual({
       name: "Cliente Uno",
-      url: "https://cliente1.nube-appex.lat",
+      url: "https://cliente1.nube.example.com",
       database: "cliente1",
       login: "backup@cliente1.com",
       secretKind: "api_key",
@@ -151,7 +151,7 @@ describe("probe requests", () => {
     const request = buildProbeRequest(values({ secret: "", database: "", login: " " }), existing());
     expect(request).toEqual({
       instanceId: "inst-1",
-      url: "https://cliente1.nube-appex.lat",
+      url: "https://cliente1.nube.example.com",
       secretKind: "api_key",
       protocol: "auto",
     });
@@ -168,7 +168,7 @@ describe("probe requests", () => {
     const request = probeRequestForInstance(existing());
     expect(request).toEqual({
       instanceId: "inst-1",
-      url: "https://cliente1.nube-appex.lat",
+      url: "https://cliente1.nube.example.com",
       database: "cliente1",
       login: "backup@cliente1.com",
       secretKind: "api_key",

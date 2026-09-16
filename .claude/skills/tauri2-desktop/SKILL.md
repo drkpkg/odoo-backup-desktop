@@ -1,9 +1,9 @@
 ---
 name: tauri2-desktop
-description: Use when adding or changing anything in src-tauri/ of Appex Backup — Tauri 2 commands, the command allowlist (build.rs AppManifest, permissions/app-commands.toml, capabilities), CSP, managed state, progress Channels, plugins (dialog, opener, notification, single-instance), blocking work (keychain, Argon2id), or Linux WebKitGTK rendering issues.
+description: Use when adding or changing anything in src-tauri/ of Odoo Backup Desktop — Tauri 2 commands, the command allowlist (build.rs AppManifest, permissions/app-commands.toml, capabilities), CSP, managed state, progress Channels, plugins (dialog, opener, notification, single-instance), blocking work (keychain, Argon2id), or Linux WebKitGTK rendering issues.
 ---
 
-# Tauri 2 desktop shell (Appex Backup)
+# Tauri 2 desktop shell (Odoo Backup Desktop)
 
 Versions in use (checked 2026-09-16): `tauri` 2.11.5, `tauri-build` 2.6.3, `@tauri-apps/cli` 2.11.x,
 `tauri-plugin-dialog` 2.7, `-opener` 2.5, `-notification` 2.4, `-single-instance` 2.4.
@@ -17,12 +17,12 @@ Contract for every command and event: `docs/architecture.md` → "Contrato IPC".
 
 | Path | Role |
 |---|---|
-| `src-tauri/tauri.conf.json` | productName `Appex Backup`, identifier `lat.appex.backup`, `mainBinaryName` `appex-backup`, CSP, bundle targets |
+| `src-tauri/tauri.conf.json` | productName `Odoo Backup Desktop`, identifier `io.github.drkpkg.odoo-backup-desktop`, `mainBinaryName` `odoo-backup-desktop`, CSP, bundle targets |
 | `src-tauri/build.rs` | `COMMANDS` list → `AppManifest::commands` (generates `allow-<cmd>` permissions) |
 | `src-tauri/permissions/app-commands.toml` | permission set `allow-app-commands` listing every command |
 | `src-tauri/capabilities/default.json` | grants `core:app/event/window:default`, `dialog:allow-open`, `allow-app-commands` to window `main` |
 | `src-tauri/src/` | state, commands, backup runner, history (SQLite), settings |
-| `crates/appex-*` | business logic; the Tauri crate only orchestrates |
+| `crates/obd-*` | business logic; the Tauri crate only orchestrates |
 
 ## Adding a command (checklist)
 
@@ -79,8 +79,8 @@ Not used yet: `updater` (needs signing keys, see `desktop-release` skill), `auto
 
 ## Paths
 
-Use `app.path().app_data_dir()` (Linux `~/.local/share/lat.appex.backup`, Windows
-`%APPDATA%\lat.appex.backup`) for `vault.bin`, `settings.json`, `history.sqlite3`;
+Use `app.path().app_data_dir()` (Linux `~/.local/share/io.github.drkpkg.odoo-backup-desktop`, Windows
+`%APPDATA%\io.github.drkpkg.odoo-backup-desktop`) for `vault.bin`, `settings.json`, `history.sqlite3`;
 `app.path().app_log_dir()` for logs. Create dirs with `0700` on Unix.
 
 ## Linux WebKitGTK quirks
@@ -95,7 +95,7 @@ Use `app.path().app_data_dir()` (Linux `~/.local/share/lat.appex.backup`, Window
   unifies it into every zbus user, and `notify-rust` then calls `zbus::block_on` inside a tokio worker
   → panic ("Cannot start a runtime from within a runtime") and no desktop notifications. Keep the
   keyring store on `rt-async-io-crypto-rust`. Check with
-  `cargo tree -p appex-backup -e features -i zbus | grep 'zbus feature "tokio"'` (must print nothing).
+  `cargo tree -p odoo-backup-desktop -e features -i zbus | grep 'zbus feature "tokio"'` (must print nothing).
 
 ## Dev commands
 

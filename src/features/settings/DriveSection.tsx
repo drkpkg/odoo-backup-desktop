@@ -122,7 +122,7 @@ function AccountBlock({ status }: { status: DriveStatus }) {
           toast.success("Google Drive desconectado");
         }}
       >
-        <p>Se revocará el acceso de Appex Backup y se borrará el token guardado. Los archivos ya subidos no se eliminan.</p>
+        <p>Se revocará el acceso de Odoo Backup Desktop y se borrará el token guardado. Los archivos ya subidos no se eliminan.</p>
       </ConfirmDialog>
     </section>
   );

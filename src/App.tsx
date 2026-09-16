@@ -56,7 +56,7 @@ export default function App() {
   if (status.isError) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="font-semibold">No se pudo iniciar Appex Backup</p>
+        <p className="font-semibold">No se pudo iniciar Odoo Backup Desktop</p>
         <p className="text-sm text-muted">{errorMessage(status.error)}</p>
       </div>
     );

@@ -1,16 +1,16 @@
 //! Google Drive account helpers shared by commands and the backup runner.
 
-use appex_storage::gdrive::{DriveOptions, GoogleDriveAdapter, OAuthClient};
+use obd_storage::gdrive::{DriveOptions, GoogleDriveAdapter, OAuthClient};
 use secrecy::SecretString;
 
 use crate::error::{CommandError, CommandResult};
 use crate::models::{DriveConfig, DriveStatus};
 use crate::settings::Settings;
 
-/// OAuth client embedded at build time (`APPEX_GDRIVE_CLIENT_ID` / `APPEX_GDRIVE_CLIENT_SECRET`).
+/// OAuth client embedded at build time (`OBD_GDRIVE_CLIENT_ID` / `OBD_GDRIVE_CLIENT_SECRET`).
 /// A client configured in the app takes precedence.
-const BUILTIN_CLIENT_ID: Option<&str> = option_env!("APPEX_GDRIVE_CLIENT_ID");
-const BUILTIN_CLIENT_SECRET: Option<&str> = option_env!("APPEX_GDRIVE_CLIENT_SECRET");
+const BUILTIN_CLIENT_ID: Option<&str> = option_env!("OBD_GDRIVE_CLIENT_ID");
+const BUILTIN_CLIENT_SECRET: Option<&str> = option_env!("OBD_GDRIVE_CLIENT_SECRET");
 
 pub fn oauth_client(config: &DriveConfig) -> Option<OAuthClient> {
     match config.client_id.as_deref().filter(|id| !id.is_empty()) {
@@ -59,7 +59,7 @@ pub fn adapter(http: &reqwest::Client, config: &DriveConfig, settings: &Settings
 
 #[cfg(test)]
 mod tests {
-    use appex_vault::SecretField;
+    use obd_vault::SecretField;
 
     use super::*;
 
@@ -69,7 +69,7 @@ mod tests {
             client_id: Some("id.apps.googleusercontent.com".into()),
             client_secret: Some(SecretField::new("GOCSPX-secret")),
             refresh_token: Some(SecretField::new("1//refresh")),
-            email: Some("ops@appex.lat".into()),
+            email: Some("ops@example.com".into()),
             display_name: None,
         };
         let json = serde_json::to_string(&status(&config)).unwrap();

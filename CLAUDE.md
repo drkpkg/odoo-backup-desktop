@@ -1,11 +1,11 @@
-# Appex Backup — notes for Claude Code
+# Odoo Backup Desktop — notes for Claude Code
 
 Desktop app (Tauri 2 + React/TS + Rust workspace) that backs up Odoo 15–19 instances.
 Read `docs/architecture.md` first: it holds the IPC contract, vault format and security rules.
 
 ## Layout
-- `crates/appex-vault` encrypted vault · `crates/appex-odoo` Odoo client + backup transports ·
-  `crates/appex-storage` storage adapters (local, Google Drive) + retention
+- `crates/obd-vault` encrypted vault · `crates/obd-odoo` Odoo client + backup transports ·
+  `crates/obd-storage` storage adapters (local, Google Drive) + retention
 - `src-tauri/` app state, commands (`commands.rs`), backup runner (`backup.rs`), history (SQLite)
 - `src/` React UI; `src/lib/ipc.ts` + `types.ts` mirror the IPC contract; mock backend for `pnpm dev`
 - Project skills in `.claude/skills/` (tauri2-desktop, odoo-remote-backup, secure-vault, gdrive-storage,

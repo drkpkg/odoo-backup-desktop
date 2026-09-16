@@ -1,12 +1,12 @@
 ---
 name: desktop-release
-description: Use when building installers or cutting a release of Appex Backup — Tauri bundle targets (.deb, .rpm, AppImage, Windows NSIS .exe), the Arch/AUR package, the AppImage Wayland library fix, GitHub Actions workflows (.github/workflows), Windows code signing, or enabling the updater.
+description: Use when building installers or cutting a release of Odoo Backup Desktop — Tauri bundle targets (.deb, .rpm, AppImage, Windows NSIS .exe), the Arch/AUR package, the AppImage Wayland library fix, GitHub Actions workflows (.github/workflows), Windows code signing, or enabling the updater.
 ---
 
 # Packaging and releases
 
 Deliverables: Linux binary + AppImage, `.deb` (Ubuntu 22.04/24.04), `.rpm`, Arch package
-(`appex-backup-bin`, AUR + `.pkg.tar.zst` asset), Windows installer (NSIS `-setup.exe`).
+(`odoo-backup-desktop-bin`, AUR + `.pkg.tar.zst` asset), Windows installer (NSIS `-setup.exe`).
 
 ## Where things are
 
@@ -16,7 +16,7 @@ Deliverables: Linux binary + AppImage, `.deb` (Ubuntu 22.04/24.04), `.rpm`, Arch
 | `.github/workflows/ci.yml` | fmt, clippy `-D warnings`, cargo tests, frontend typecheck/test/build |
 | `.github/workflows/release.yml` | tag `v*` → draft GitHub Release with all bundles |
 | `packaging/appimage/strip-wayland-libs.sh` | removes bundled libwayland/libxkbcommon/libxcb and repacks |
-| `packaging/aur/appex-backup-bin/PKGBUILD` | Arch package from the release `.deb` |
+| `packaging/aur/odoo-backup-desktop-bin/PKGBUILD` | Arch package from the release `.deb` |
 | `packaging/aur/build-local.sh` | builds the Arch package from a local `target/release/bundle/deb/*.deb` |
 
 Bundles land in `target/release/bundle/<type>/` at the **workspace root** (not `src-tauri/target`).
@@ -27,12 +27,12 @@ Bundles land in `target/release/bundle/<type>/` at the **workspace root** (not `
    `[workspace.package]` of `Cargo.toml`; update `pkgver` in the PKGBUILD.
 2. Commit, tag `vX.Y.Z`, push the tag → `release.yml` builds Linux (ubuntu-22.04) + Windows and
    creates a **draft** release. Assets are renamed by `releaseAssetNamePattern`
-   `[mainBinaryName]_[version]_[arch][setup][ext]` → e.g. `appex-backup_0.1.0_amd64.deb`
+   `[mainBinaryName]_[version]_[arch][setup][ext]` → e.g. `odoo-backup-desktop_0.1.0_amd64.deb`
    (*the exact `[arch]` string per bundle type must be checked on the first release*).
-3. The `arch-package` job downloads the `.deb`, builds `appex-backup-bin-*.pkg.tar.zst` in an
+3. The `arch-package` job downloads the `.deb`, builds `odoo-backup-desktop-bin-*.pkg.tar.zst` in an
    `archlinux` container and attaches it plus the generated PKGBUILD/.SRCINFO with real sha256.
 4. Review the draft, publish. For the AUR: copy `PKGBUILD` + `.SRCINFO` from the release to the
-   `ssh://aur@aur.archlinux.org/appex-backup-bin.git` repo.
+   `ssh://aur@aur.archlinux.org/odoo-backup-desktop-bin.git` repo.
 
 ## Linux notes
 
@@ -77,7 +77,7 @@ pnpm tauri icon src-tauri/icons/app-icon.svg        # regenerate icons (delete a
   `.relr.dyn` section of current Arch libraries (`unknown type [0x13] section .relr.dyn` →
   "failed to run linuxdeploy"). Use `NO_STRIP=true`. Not needed on the ubuntu-22.04 CI runner.
   An AppImage built on Arch bundles Arch's newer libraries and is for local testing only.
-- Bundle file names use `productName` (`Appex Backup_0.1.0_amd64.deb`, with a space); the release
-  workflow renames assets with `[mainBinaryName]_[version]_[arch]…`. The deb package name is `appex-backup`.
+- Bundle file names use `productName` (`Odoo Backup Desktop_0.1.0_amd64.deb`, with a space); the release
+  workflow renames assets with `[mainBinaryName]_[version]_[arch]…`. The deb package name is `odoo-backup-desktop`.
 - Downloads of linuxdeploy/appimagetool from GitHub occasionally fail with TLS errors
   (`cannot decrypt peer's message`): just retry.

@@ -69,106 +69,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
-name = "appex-backup"
-version = "0.1.0"
-dependencies = [
- "appex-odoo",
- "appex-storage",
- "appex-vault",
- "chrono",
- "reqwest",
- "rusqlite",
- "secrecy",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "appex-odoo"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "bytes",
- "futures-util",
- "quick-xml",
- "reqwest",
- "secrecy",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "tokio-util",
- "tracing",
- "url",
- "wiremock",
- "zip",
-]
-
-[[package]]
-name = "appex-storage"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "base64 0.23.1",
- "bytes",
- "chrono",
- "futures-util",
- "getrandom 0.4.3",
- "md-5",
- "reqwest",
- "secrecy",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "tokio-util",
- "tracing",
- "url",
- "wiremock",
-]
-
-[[package]]
-name = "appex-vault"
-version = "0.1.0"
-dependencies = [
- "apple-native-keyring-store",
- "argon2",
- "base64 0.23.1",
- "chacha20poly1305",
- "getrandom 0.4.3",
- "keyring-core",
- "secrecy",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "tracing",
- "windows-native-keyring-store",
- "zbus-secret-service-keyring-store",
- "zeroize",
-]
-
-[[package]]
 name = "apple-native-keyring-store"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2867,6 +2767,76 @@ dependencies = [
 ]
 
 [[package]]
+name = "obd-odoo"
+version = "0.2.0"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "futures-util",
+ "quick-xml",
+ "reqwest",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "url",
+ "wiremock",
+ "zip",
+]
+
+[[package]]
+name = "obd-storage"
+version = "0.2.0"
+dependencies = [
+ "async-trait",
+ "base64 0.23.1",
+ "bytes",
+ "chrono",
+ "futures-util",
+ "getrandom 0.4.3",
+ "md-5",
+ "reqwest",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "url",
+ "wiremock",
+]
+
+[[package]]
+name = "obd-vault"
+version = "0.2.0"
+dependencies = [
+ "apple-native-keyring-store",
+ "argon2",
+ "base64 0.23.1",
+ "chacha20poly1305",
+ "getrandom 0.4.3",
+ "keyring-core",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "tracing",
+ "windows-native-keyring-store",
+ "zbus-secret-service-keyring-store",
+ "zeroize",
+]
+
+[[package]]
 name = "objc2"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3060,6 +3030,36 @@ dependencies = [
  "objc2-app-kit",
  "objc2-core-foundation",
  "objc2-foundation",
+]
+
+[[package]]
+name = "odoo-backup-desktop"
+version = "0.2.0"
+dependencies = [
+ "chrono",
+ "obd-odoo",
+ "obd-storage",
+ "obd-vault",
+ "reqwest",
+ "rusqlite",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "url",
+ "uuid",
 ]
 
 [[package]]

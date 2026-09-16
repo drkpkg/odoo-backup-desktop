@@ -1,19 +1,19 @@
 [workspace]
 resolver = "3"
-members = ["src-tauri", "crates/appex-vault", "crates/appex-odoo", "crates/appex-storage"]
+members = ["src-tauri", "crates/obd-vault", "crates/obd-odoo", "crates/obd-storage"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.88"
 license = "MIT"
 authors = ["Felix Daniel Coca Calvimontes"]
-repository = "https://github.com/drkpkg/appex-backup"
+repository = "https://github.com/drkpkg/odoo-backup-desktop"
 
 [workspace.dependencies]
-appex-vault = { path = "crates/appex-vault" }
-appex-odoo = { path = "crates/appex-odoo" }
-appex-storage = { path = "crates/appex-storage" }
+obd-vault = { path = "crates/obd-vault" }
+obd-odoo = { path = "crates/obd-odoo" }
+obd-storage = { path = "crates/obd-storage" }
 
 async-trait = "0.1.92"
 base64 = "0.23"

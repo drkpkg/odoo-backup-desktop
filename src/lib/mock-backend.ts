@@ -34,7 +34,7 @@ export type MockOptions = {
 };
 
 const MB = 1024 * 1024;
-const MOCK_PASSWORD = "appex-demo";
+const MOCK_PASSWORD = "obd-demo";
 
 function isoAgo(minutes: number): string {
   return new Date(Date.now() - minutes * 60_000).toISOString();
@@ -138,15 +138,15 @@ export class MockBackend implements Backend {
     maxConcurrentBackups: 2,
     serverPrepareTimeoutMinutes: 60,
     autoLockMinutes: 15,
-    drive: { rootFolderName: "Appex Backup", keepLast: 30, permanentDelete: false, sharedDriveId: null },
+    drive: { rootFolderName: "Odoo Backup Desktop", keepLast: 30, permanentDelete: false, sharedDriveId: null },
   };
   private drive: DriveStatus = {
     configured: true,
     clientId: "123456789012-abcdefg.apps.googleusercontent.com",
     hasClientSecret: true,
     connected: true,
-    email: "backups@appex.lat",
-    displayName: "Backups Appex",
+    email: "backups@example.com",
+    displayName: "Backups Odoo",
   };
   private driveConnect: { timer: ReturnType<typeof setTimeout>; reject: (e: unknown) => void } | null = null;
 
@@ -193,7 +193,7 @@ export class MockBackend implements Backend {
   private seed(): void {
     const andina = this.makeInstance({
       name: "Distribuidora Andina",
-      url: "https://andina.nube-appex.lat",
+      url: "https://andina.nube.example.com",
       database: "andina",
       login: "backup@andina.com",
       secretKind: "password",
@@ -205,11 +205,11 @@ export class MockBackend implements Backend {
     });
     const sanRafael = this.makeInstance({
       name: "Clínica San Rafael",
-      url: "https://sanrafael.nube-appex.lat",
+      url: "https://sanrafael.nube.example.com",
       database: "sanrafael",
       login: "api-backup",
       secretKind: "api_key",
-      transport: "appex_module",
+      transport: "obd_module",
       protocol: "json2",
       uploadToDrive: true,
       masterPassword: null,
@@ -217,7 +217,7 @@ export class MockBackend implements Backend {
     });
     const tornillo = this.makeInstance({
       name: "Ferretería El Tornillo",
-      url: "http://tornillo.nube-appex.lat",
+      url: "http://tornillo.nube.example.com",
       database: "tornillo",
       login: "admin",
       secretKind: "password",
@@ -229,7 +229,7 @@ export class MockBackend implements Backend {
     });
     const pinos = this.makeInstance({
       name: "Colegio Los Pinos",
-      url: "https://lospinos.nube-appex.lat",
+      url: "https://lospinos.nube.example.com",
       database: "lospinos",
       login: "backup@lospinos.edu",
       secretKind: "api_key",
@@ -367,7 +367,7 @@ export class MockBackend implements Backend {
         ? { status: "skipped", reason: "requiere autenticación" }
         : moduleInstalled
           ? { status: "ok" }
-          : { status: "failed", code: "module_not_installed", message: "model appex.backup.api does not exist" };
+          : { status: "failed", code: "module_not_installed", message: "model obd.backup.api does not exist" };
 
     const listDbDisabled = host.includes("tornillo") || host.includes("sanrafael");
     const dbManager: ProbeReport["dbManager"] = listDbDisabled
@@ -375,7 +375,7 @@ export class MockBackend implements Backend {
       : { status: "ok" };
 
     let recommendedTransport: TransportKind | null = null;
-    if (module.status === "ok") recommendedTransport = "appex_module";
+    if (module.status === "ok") recommendedTransport = "obd_module";
     else if (dbManager.status === "ok" && hasMasterPassword) recommendedTransport = "db_manager";
     if (recommendedTransport === "db_manager") warnings.push("master_password_over_wire");
 
@@ -590,7 +590,7 @@ export class MockBackend implements Backend {
 
     const failing = instance.transport === "db_manager" && hostOf(instance.url).includes("tornillo");
     const total = Math.round((240 + Math.random() * 500) * MB);
-    const knownTotal = transport === "appex_module";
+    const knownTotal = transport === "obd_module";
     const uploads = instance.uploadToDrive && this.drive.connected;
 
     type Step = { at: number; run: () => void };
@@ -764,7 +764,7 @@ export class MockBackend implements Backend {
     return new Promise<DriveStatus>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.driveConnect = null;
-        this.drive = { ...this.drive, connected: true, email: "backups@appex.lat", displayName: "Backups Appex" };
+        this.drive = { ...this.drive, connected: true, email: "backups@example.com", displayName: "Backups Odoo" };
         resolve({ ...this.drive });
       }, 4000 * this.speed);
       this.driveConnect = { timer, reject };

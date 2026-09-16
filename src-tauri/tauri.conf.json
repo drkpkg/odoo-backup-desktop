@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Appex Backup",
-  "mainBinaryName": "appex-backup",
+  "productName": "Odoo Backup Desktop",
+  "mainBinaryName": "odoo-backup-desktop",
   "version": "../package.json",
-  "identifier": "lat.appex.backup",
+  "identifier": "io.github.drkpkg.odoo-backup-desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Appex Backup",
+        "title": "Odoo Backup Desktop",
         "width": 1180,
         "height": 780,
         "minWidth": 900,
@@ -42,11 +42,11 @@
     "targets": ["deb", "rpm", "appimage", "nsis"],
     "category": "Utility",
     "shortDescription": "Backups de instancias Odoo",
-    "longDescription": "Appex Backup descarga backups .zip de instancias Odoo 15 a 19, guarda las credenciales cifradas y sube los backups a Google Drive.",
-    "publisher": "AppexLat",
+    "longDescription": "Odoo Backup Desktop descarga backups .zip de instancias Odoo 15 a 19, guarda las credenciales cifradas y sube los backups a Google Drive.",
+    "publisher": "Felix Daniel Coca Calvimontes",
     "copyright": "© 2026 Felix Daniel Coca Calvimontes",
     "license": "MIT",
-    "homepage": "https://github.com/drkpkg/appex-backup",
+    "homepage": "https://github.com/drkpkg/odoo-backup-desktop",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -58,13 +58,13 @@
       "deb": {
         "section": "utils",
         "files": {
-          "/usr/share/doc/appex-backup/copyright": "../LICENSE"
+          "/usr/share/doc/odoo-backup-desktop/copyright": "../LICENSE"
         }
       },
       "rpm": {
         "release": "1",
         "files": {
-          "/usr/share/licenses/appex-backup/LICENSE": "../LICENSE"
+          "/usr/share/licenses/odoo-backup-desktop/LICENSE": "../LICENSE"
         }
       }
     },

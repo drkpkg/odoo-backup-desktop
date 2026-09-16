@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Starts Odoo 15/17/19 in Docker, creates the test databases and runs the ignored
-# appex-odoo integration tests against them.
+# obd-odoo integration tests against them.
 #
 #   dev/odoo/run-integration.sh            # run and tear everything down
 #   KEEP=1 dev/odoo/run-integration.sh     # keep containers running afterwards
@@ -32,11 +32,11 @@ p19=$!
 wait "$p15" "$p17" "$p19"
 
 echo "==> Generating an API key for admin on Odoo 19"
-api_key="$("${compose[@]}" run --rm -T odoo19 odoo shell -d it19 --log-level=error 2>/dev/null <<'PY' | sed -n 's/^APPEX_API_KEY=//p' | tail -n1
+api_key="$("${compose[@]}" run --rm -T odoo19 odoo shell -d it19 --log-level=error 2>/dev/null <<'PY' | sed -n 's/^OBD_API_KEY=//p' | tail -n1
 user = env.ref("base.user_admin")
-key = env["res.users.apikeys"].with_user(user)._generate(None, "appex-integration", None)
+key = env["res.users.apikeys"].with_user(user)._generate(None, "obd-integration", None)
 env.cr.commit()
-print("APPEX_API_KEY=" + key)
+print("OBD_API_KEY=" + key)
 PY
 )"
 if [[ -z "$api_key" ]]; then
@@ -47,19 +47,19 @@ fi
 echo "==> Starting Odoo servers"
 "${compose[@]}" up -d --wait odoo15 odoo15-nolist odoo17 odoo19 odoo19-nolist
 
-export APPEX_IT_MASTER_PASSWORD="$master_password"
-export APPEX_IT_ADMIN_LOGIN="admin"
-export APPEX_IT_ADMIN_PASSWORD="admin"
-export APPEX_IT_ODOO15_URL="http://it15.localhost:18015"
-export APPEX_IT_ODOO17_URL="http://it17.localhost:18017"
-export APPEX_IT_ODOO19_URL="http://it19.localhost:18019"
-export APPEX_IT_ODOO15_NOLIST_URL="http://it15.localhost:18115"
-export APPEX_IT_ODOO19_NOLIST_URL="http://it19.localhost:18119"
-export APPEX_IT_ODOO19_API_KEY="$api_key"
+export OBD_IT_MASTER_PASSWORD="$master_password"
+export OBD_IT_ADMIN_LOGIN="admin"
+export OBD_IT_ADMIN_PASSWORD="admin"
+export OBD_IT_ODOO15_URL="http://it15.localhost:18015"
+export OBD_IT_ODOO17_URL="http://it17.localhost:18017"
+export OBD_IT_ODOO19_URL="http://it19.localhost:18019"
+export OBD_IT_ODOO15_NOLIST_URL="http://it15.localhost:18115"
+export OBD_IT_ODOO19_NOLIST_URL="http://it19.localhost:18119"
+export OBD_IT_ODOO19_API_KEY="$api_key"
 
 # Exported for other suites (e.g. the app IPC tests) when the stack is kept.
 mkdir -p "$here/.data"
-env | grep '^APPEX_IT_' > "$here/.data/it.env"
+env | grep '^OBD_IT_' > "$here/.data/it.env"
 chmod 600 "$here/.data/it.env"
 
 if [[ -n "${IT_COMMAND:-}" ]]; then
@@ -71,4 +71,4 @@ fi
 
 echo "==> Running integration tests"
 cd "$repo"
-cargo test -p appex-odoo --test integration_odoo -- --ignored --nocapture --test-threads=1 "$@"
+cargo test -p obd-odoo --test integration_odoo -- --ignored --nocapture --test-threads=1 "$@"
