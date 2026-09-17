@@ -1,18 +1,22 @@
-import { CircleCheck, CircleMinus, CircleX } from "lucide-react";
+import { ChevronRight, CircleCheck, CircleMinus, CircleX } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Alert } from "../../components/Alert";
 import { Badge } from "../../components/Badge";
 import { messageForCode } from "../../lib/errors";
 import { formatDateTime, formatOdooVersion } from "../../lib/format";
-import { PROBE_WARNINGS, PROTOCOL_LABELS, TRANSPORT_LABELS, WARNING_ORDER } from "../../lib/labels";
-import type { CheckStatus, ProbeReport } from "../../lib/types";
+import { PROBE_WARNINGS, PROTOCOL_LABELS, WARNING_ORDER } from "../../lib/labels";
+import type { CheckStatus, ProbeReport, ProbeWarning } from "../../lib/types";
+import type { Guidance } from "./readiness";
 
 const SKIP_REASONS: Record<string, string> = {
   no_credentials: "sin credenciales",
   no_database: "sin base de datos",
   auth_failed: "requiere autenticación correcta",
 };
+
+/** Advertencias que se muestran siempre; el resto queda en los detalles. */
+const PROMINENT_WARNINGS: ProbeWarning[] = ["insecure_http", "unsupported_version"];
 
 function CheckRow({ label, check, okText, hint }: { label: string; check: CheckStatus; okText: string; hint?: ReactNode }) {
   let icon: ReactNode;
@@ -48,10 +52,38 @@ function CheckRow({ label, check, okText, hint }: { label: string; check: CheckS
   );
 }
 
-/** Resultado de "Probar conexión". */
-export function ProbeReportView({ report }: { report: ProbeReport }) {
+/** "Odoo 18.0 · XML-RPC · BD cliente1": lo detectado, en una línea. */
+export function probeFacts(report: ProbeReport): string {
+  return [
+    `Odoo ${formatOdooVersion(report.version)}`,
+    report.protocol ? PROTOCOL_LABELS[report.protocol] : null,
+    report.database ? `BD ${report.database}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/**
+ * Resultado de "Probar conexión": primero el siguiente paso (`guidance`) y las advertencias graves;
+ * después las comprobaciones. Con `collapseDetails` las comprobaciones quedan plegadas.
+ */
+export function ProbeReportView({
+  report,
+  guidance,
+  action,
+  collapseDetails = false,
+}: {
+  report: ProbeReport;
+  guidance: Guidance;
+  /** Botón que aplica `guidance.action`. */
+  action?: ReactNode;
+  collapseDetails?: boolean;
+}) {
   const warnings = WARNING_ORDER.filter((w) => report.warnings.includes(w));
-  return (
+  const prominent = warnings.filter((w) => PROMINENT_WARNINGS.includes(w));
+  const secondary = warnings.filter((w) => !PROMINENT_WARNINGS.includes(w));
+
+  const details = (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={report.supported ? "accent" : "warning"}>Odoo {formatOdooVersion(report.version)}</Badge>
@@ -73,34 +105,52 @@ export function ProbeReportView({ report }: { report: ProbeReport }) {
           label="Gestor de bases de datos"
           check={report.dbManager}
           okText="Habilitado (list_db = True)."
-          hint="Solo se usa si eliges el transporte Gestor de BD."
+          hint="Solo se usa con el método Gestor de BD."
         />
       </ul>
 
-      {report.recommendedTransport ? (
-        <Alert tone="success" title={`Transporte recomendado: ${TRANSPORT_LABELS[report.recommendedTransport]}`}>
-          {report.recommendedTransport === "obd_module"
-            ? "Usa la API key y no necesita la contraseña maestra."
-            : "Envía la contraseña maestra al servidor en cada respaldo."}
-        </Alert>
-      ) : (
-        <Alert tone="warning" title="No hay un transporte de respaldo disponible">
-          Instala el módulo obd_backup (requiere API key) o habilita list_db y guarda la contraseña maestra.
-        </Alert>
-      )}
-
-      {warnings.map((warning) => {
-        const info = PROBE_WARNINGS[warning];
-        return (
-          <Alert key={warning} tone={info.severity} title={info.title}>
-            {info.detail}
-          </Alert>
-        );
-      })}
+      {secondary.map((warning) => (
+        <WarningAlert key={warning} warning={warning} />
+      ))}
 
       <p className="text-xs text-subtle">
         Probado {formatDateTime(report.checkedAt)} · {report.version.serverVersion}
       </p>
     </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <Alert tone={guidance.tone} title={guidance.title}>
+        {guidance.detail}
+        {action ? <div className="mt-2">{action}</div> : null}
+      </Alert>
+
+      {prominent.map((warning) => (
+        <WarningAlert key={warning} warning={warning} />
+      ))}
+
+      {collapseDetails ? (
+        <details className="group rounded-lg border border-border">
+          <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-3 py-2 text-[13px] hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
+            <ChevronRight size={14} className="shrink-0 text-muted transition-transform group-open:rotate-90" aria-hidden="true" />
+            <span className="shrink-0 font-medium">Detalles de la prueba</span>
+            <span className="min-w-0 truncate text-muted">{probeFacts(report)}</span>
+          </summary>
+          <div className="border-t border-border px-3 py-3">{details}</div>
+        </details>
+      ) : (
+        details
+      )}
+    </div>
+  );
+}
+
+function WarningAlert({ warning }: { warning: ProbeWarning }) {
+  const info = PROBE_WARNINGS[warning];
+  return (
+    <Alert tone={info.severity} title={info.title}>
+      {info.detail}
+    </Alert>
   );
 }

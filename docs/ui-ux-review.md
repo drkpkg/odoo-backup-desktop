@@ -2,7 +2,7 @@
 
 > Informe generado con Codex (2026-09-16) a partir de 32 capturas (mock claro/oscuro, 900×600 y app real en WebKitGTK) y del código. Referencias `archivo:línea` verificadas al commit `1162f6c`.
 >
-> **Estado:** lote 1 (tablas operables) implementado. Decisión: la UI usa «respaldo» en lugar de «backup».
+> **Estado:** lotes 1 (tablas operables) y 2 (flujo de instancia) implementados. Decisión: la UI usa «respaldo» en lugar de «backup».
 
 ## Resumen
 

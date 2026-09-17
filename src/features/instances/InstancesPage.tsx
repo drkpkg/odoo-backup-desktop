@@ -26,6 +26,7 @@ import { STATUS_TONES } from "../history/tones";
 import { connectionState } from "./connection";
 import { InstanceFormDialog } from "./InstanceFormDialog";
 import { ProbeReportView } from "./ProbeReportView";
+import { assessReadiness, probeGuidance } from "./readiness";
 import { probeRequestForInstance } from "./schema";
 
 type ProbeState = { instance: InstanceView; report: ProbeReport | null; error: string | null };
@@ -86,6 +87,14 @@ export function InstancesPage({
   };
 
   const list = instances.data ?? [];
+  const probeReadiness = probe?.report ? probeGuidance(assessReadiness(probe.report, probe.instance), probe.instance) : null;
+
+  const editFromProbe = ({ instance, report }: ProbeState) => {
+    // La lista puede no haberse recargado todavía: abrir con la prueba recién hecha.
+    const current = list.find((item) => item.id === instance.id) ?? instance;
+    setProbe(null);
+    openEdit(report ? { ...current, lastProbe: report } : current);
+  };
 
   return (
     <>
@@ -172,6 +181,11 @@ export function InstancesPage({
                 Repetir
               </Button>
             ) : null}
+            {probeReadiness && probeReadiness.tone !== "success" && probe ? (
+              <Button icon={<Pencil size={14} />} onClick={() => editFromProbe(probe)}>
+                Editar instancia
+              </Button>
+            ) : null}
             <Button variant="primary" onClick={() => setProbe(null)}>
               Cerrar
             </Button>
@@ -180,7 +194,7 @@ export function InstancesPage({
       >
         {probe && !probe.report && !probe.error ? <Spinner label="Conectando con el servidor…" /> : null}
         {probe?.error ? <Alert tone="danger" title="No se pudo probar la conexión">{probe.error}</Alert> : null}
-        {probe?.report ? <ProbeReportView report={probe.report} /> : null}
+        {probe?.report && probeReadiness ? <ProbeReportView report={probe.report} guidance={probeReadiness} /> : null}
       </Dialog>
 
       <ConfirmDialog

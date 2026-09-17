@@ -81,9 +81,19 @@ describe("connectionState", () => {
   });
 
   it("needs attention when no transport is available", () => {
-    const state = connectionState(instance({ lastProbe: probe({ recommendedTransport: null }) }));
+    const state = connectionState(
+      instance({
+        lastProbe: probe({ dbManager: { status: "failed", code: "db_manager_disabled", message: "x" }, recommendedTransport: null }),
+      }),
+    );
     expect(state).toMatchObject({ label: "Requiere atención", tone: "warning" });
     expect(state.technical).toBe("XML-RPC");
+  });
+
+  it("uses the current master password, not only the probe recommendation", () => {
+    // Probed before the master password was saved: the database manager is usable now.
+    const state = connectionState(instance({ lastProbe: probe({ recommendedTransport: null }) }));
+    expect(state).toMatchObject({ label: "Lista", technical: "XML-RPC · Gestor de BD" });
   });
 
   it("checks the forced transport requirements", () => {

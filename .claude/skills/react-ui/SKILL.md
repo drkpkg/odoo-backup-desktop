@@ -16,6 +16,11 @@ The UI is a thin client over the Rust commands documented in `docs/architecture.
   disclosure or `@container` queries (`@3xl:`), row actions = one primary button + `ActionMenu`
   (`src/components/ActionMenu.tsx`, portal + keyboard support). Plugin `instance_actions` go into
   that menu under "Extensiones".
+- Dialogs whose primary action must stay visible (forms) use `<Dialog plain>` with `DialogBody` +
+  `DialogFooter` so the footer sits outside the scroll area; don't use sticky footers inside the body.
+- Probe results are interpreted by `src/features/instances/readiness.ts` (`assessReadiness` mirrors
+  `resolve_transport` in `backup.rs`; `probeGuidance` gives one next step + optional one-click fix).
+  Keep both in sync with the backend when transport rules change.
 - Verify layout changes with the headless Chromium checks at 1180×780 and 900×600, light and dark.
 
 ## Stack

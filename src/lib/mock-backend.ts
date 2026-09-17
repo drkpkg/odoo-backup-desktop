@@ -455,7 +455,7 @@ export class MockBackend implements Backend {
     if (protocol === "xml_rpc" && major >= 19) warnings.push("deprecated_xml_rpc");
 
     const auth: ProbeReport["auth"] = !hasSecret
-      ? { status: "skipped", reason: "sin credenciales" }
+      ? { status: "skipped", reason: "no_credentials" }
       : protocol === null
         ? { status: "failed", code: "unsupported_protocol", message: "JSON-2 requires Odoo >= 19 and an API key" }
         : host.includes("badauth")
@@ -464,8 +464,10 @@ export class MockBackend implements Backend {
 
     const moduleInstalled = host.includes("sanrafael");
     const module: ProbeReport["module"] =
-      auth.status !== "ok"
-        ? { status: "skipped", reason: "requiere autenticación" }
+      auth.status === "skipped"
+        ? auth
+        : auth.status !== "ok"
+          ? { status: "skipped", reason: "auth_failed" }
         : moduleInstalled
           ? { status: "ok" }
           : { status: "failed", code: "module_not_installed", message: "model obd.backup.api does not exist" };
@@ -476,7 +478,7 @@ export class MockBackend implements Backend {
       : { status: "ok" };
 
     let recommendedTransport: TransportKind | null = null;
-    if (module.status === "ok") recommendedTransport = "obd_module";
+    if (module.status === "ok" && secretKind === "api_key") recommendedTransport = "obd_module";
     else if (dbManager.status === "ok" && hasMasterPassword) recommendedTransport = "db_manager";
     if (recommendedTransport === "db_manager") warnings.push("master_password_over_wire");
 
