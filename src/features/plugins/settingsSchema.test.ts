@@ -12,7 +12,7 @@ import {
   parseServerErrors,
   validateDraft,
   validateSubmissionLikeBackend,
-} from "./schemaForm";
+} from "./settingsSchema";
 
 const schema: SettingsSchema = {
   type: "object",

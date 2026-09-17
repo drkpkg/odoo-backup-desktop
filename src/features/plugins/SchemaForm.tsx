@@ -21,7 +21,7 @@ import {
   validateDraft,
   type Draft,
   type FieldErrors,
-} from "./schemaForm";
+} from "./settingsSchema";
 
 const TEXTAREA =
   "min-h-24 w-full rounded-md border border-border-strong bg-surface px-2.5 py-2 text-sm text-fg placeholder:text-subtle transition-colors hover:border-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 aria-[invalid=true]:border-danger";

@@ -8,7 +8,7 @@
 
 import helloManifest from "../../examples/plugins/hello-obd/plugin.json";
 import helloSettingsSchema from "../../examples/plugins/hello-obd/settings.schema.json";
-import { validateSubmissionLikeBackend } from "../features/plugins/schemaForm";
+import { validateSubmissionLikeBackend } from "../features/plugins/settingsSchema";
 import type { Backend } from "./backend";
 import { AppError } from "./errors";
 import type {

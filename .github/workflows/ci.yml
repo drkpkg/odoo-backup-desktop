@@ -59,6 +59,19 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Windows and macOS ignore case: `SchemaForm.tsx` + `schemaForm.ts` break the Windows build
+      # (TS1149) while Linux passes. Compares full paths and extensionless module paths.
+      - name: File names are unique ignoring case
+        shell: bash
+        env:
+          LC_ALL: C
+        run: |
+          collisions="$( { git ls-files; git ls-files | sed -E 's/\.(ts|tsx|js|jsx|mjs)$//'; } | sort -u | sort -f | uniq -di )"
+          if [[ -n $collisions ]]; then
+            echo "::error::Paths that only differ in case: $collisions"
+            exit 1
+          fi
+
       - uses: pnpm/action-setup@v6
         with:
           version: ${{ env.PNPM_VERSION }}
