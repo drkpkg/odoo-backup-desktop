@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CloudUpload, DatabaseBackup, History, Pencil, PlugZap, Plus, Server, Trash2 } from "lucide-react";
+import { CloudUpload, DatabaseBackup, History, Pencil, PlugZap, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { ActionMenu, type ActionMenuSection } from "../../components/ActionMenu";
@@ -8,7 +8,7 @@ import { Badge } from "../../components/Badge";
 import { Button } from "../../components/Button";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Dialog } from "../../components/Dialog";
-import { EmptyState, PageHeader } from "../../components/Layout";
+import { PageHeader } from "../../components/Layout";
 import { Spinner } from "../../components/Spinner";
 import { useToast } from "../../components/Toast";
 import { errorMessage, messageForCode } from "../../lib/errors";
@@ -16,13 +16,16 @@ import { formatRelative } from "../../lib/format";
 import { ipc } from "../../lib/ipc";
 import { HISTORY_STATUS_LABELS } from "../../lib/labels";
 import { queryKeys } from "../../lib/query";
-import type { InstanceView, ProbeReport } from "../../lib/types";
+import type { InstanceView, ProbeReport, Settings } from "../../lib/types";
 import { useBackupJobs } from "../backups/BackupJobsProvider";
 import { pluginMenus, type PluginMenuEntry, type Route } from "../layout/navigation";
 import { pluginIcon } from "../plugins/icons";
 import { useOpenPluginMenu, usePlugins } from "../plugins/usePlugins";
+import type { SettingsSectionId } from "../settings/sections";
 import { STATUS_TONES } from "../history/tones";
 import { connectionState } from "./connection";
+import { GettingStartedBanner, GettingStartedCard, type GettingStartedActions } from "./GettingStarted";
+import { onboardingState } from "./onboarding";
 import { InstanceFormDialog } from "./InstanceFormDialog";
 import { ProbeReportView } from "./ProbeReportView";
 import { assessReadiness, probeGuidance } from "./readiness";
@@ -30,12 +33,25 @@ import { probeRequestForInstance } from "./schema";
 
 type ProbeState = { instance: InstanceView; report: ProbeReport | null; error: string | null };
 
+const GUIDE_DISMISSED_KEY = "obd.gettingStarted.dismissed";
+
+/** Preferencia local de esta vista: si falla el almacenamiento, la guía simplemente se muestra. */
+function readGuideDismissed(): boolean {
+  try {
+    return localStorage.getItem(GUIDE_DISMISSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export function InstancesPage({
   onShowHistory,
   onNavigate,
+  onOpenSettings,
 }: {
   onShowHistory: (instanceId: string) => void;
   onNavigate: (route: Route) => void;
+  onOpenSettings: (section: SettingsSectionId) => void;
 }) {
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -50,6 +66,8 @@ export function InstancesPage({
   const [deleting, setDeleting] = useState<InstanceView | null>(null);
   const [probe, setProbe] = useState<ProbeState | null>(null);
   const [starting, setStarting] = useState<string | null>(null);
+  const [guideDismissed, setGuideDismissed] = useState(readGuideDismissed);
+  const settings = useQuery({ queryKey: queryKeys.settings, queryFn: () => ipc.getSettings() });
 
   const openCreate = () => {
     setEditing(null);
@@ -86,6 +104,42 @@ export function InstancesPage({
   };
 
   const list = instances.data ?? [];
+  const onboarding = onboardingState(list, new Set(jobs.running.map((job) => job.instanceId)));
+
+  const changeFolder = async () => {
+    try {
+      const current = settings.data ?? (await ipc.getSettings());
+      const selected = await ipc.pickDirectory(current.downloadDir || undefined);
+      if (!selected || selected === current.downloadDir) return;
+      const next = await ipc.updateSettings({ ...current, downloadDir: selected });
+      queryClient.setQueryData<Settings>(queryKeys.settings, next);
+      toast.success("Carpeta de respaldos actualizada", next.downloadDir);
+    } catch (err) {
+      toast.error("No se pudo cambiar la carpeta", errorMessage(err));
+    }
+  };
+
+  const dismissGuide = () => {
+    setGuideDismissed(true);
+    try {
+      localStorage.setItem(GUIDE_DISMISSED_KEY, "1");
+    } catch {
+      // Sin almacenamiento: se oculta solo en esta sesión.
+    }
+  };
+
+  const guideActions: GettingStartedActions = {
+    onAddInstance: openCreate,
+    onProbe: (instance) => void runProbe(instance),
+    onEdit: openEdit,
+    onBackup: (instance) => void startBackup(instance),
+    onShowProgress: (instance) => {
+      const job = jobs.runningFor(instance.id);
+      if (job) jobs.showJob(job.jobId);
+    },
+    onChangeFolder: () => void changeFolder(),
+    onOpenDrive: () => onOpenSettings("drive"),
+  };
   const probeReadiness = probe?.report ? probeGuidance(assessReadiness(probe.report, probe.instance), probe.instance) : null;
 
   const editFromProbe = ({ instance, report }: ProbeState) => {
@@ -112,15 +166,15 @@ export function InstancesPage({
         {instances.isError ? <Alert tone="danger">{errorMessage(instances.error)}</Alert> : null}
 
         {instances.isSuccess && list.length === 0 ? (
-          <EmptyState
-            icon={<Server size={22} />}
-            title="Aún no hay instancias"
-            description="Registra una instancia Odoo (15 a 19) con su URL y credenciales para empezar a hacer respaldos."
-            action={
-              <Button variant="primary" icon={<Plus size={15} />} onClick={openCreate}>
-                Nueva instancia
-              </Button>
-            }
+          <GettingStartedCard state={onboarding} downloadDir={settings.data?.downloadDir ?? null} actions={guideActions} />
+        ) : null}
+
+        {list.length > 0 && !onboarding.finished && !guideDismissed ? (
+          <GettingStartedBanner
+            state={onboarding}
+            downloadDir={settings.data?.downloadDir ?? null}
+            actions={guideActions}
+            onDismiss={dismissGuide}
           />
         ) : null}
 

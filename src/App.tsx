@@ -12,6 +12,7 @@ import { MockPluginWindowDialog } from "./features/plugins/MockPluginWindowDialo
 import { PluginPageView } from "./features/plugins/PluginPageView";
 import { PluginsPage } from "./features/plugins/PluginsPage";
 import { usePluginsChangedListener } from "./features/plugins/usePlugins";
+import type { SettingsFocus, SettingsSectionId } from "./features/settings/sections";
 import { SettingsPage } from "./features/settings/SettingsPage";
 import { VaultGate } from "./features/vault/VaultGate";
 import { errorMessage } from "./lib/errors";
@@ -24,19 +25,24 @@ export default function App() {
   const toast = useToast();
   const [route, setRoute] = useState<Route>(coreRoute("instances"));
   const [historyInstanceId, setHistoryInstanceId] = useState<string | null>(null);
-  const [settingsPluginId, setSettingsPluginId] = useState<string | null>(null);
+  const [settingsFocus, setSettingsFocus] = useState<SettingsFocus | null>(null);
 
   const status = useQuery({ queryKey: queryKeys.appStatus, queryFn: () => ipc.getAppStatus(), staleTime: Infinity });
   usePluginsChangedListener();
 
   const navigate = useCallback((next: Route) => {
     if (!(next.kind === "core" && next.page === "history")) setHistoryInstanceId(null);
-    if (!(next.kind === "core" && next.page === "settings")) setSettingsPluginId(null);
+    if (!(next.kind === "core" && next.page === "settings")) setSettingsFocus(null);
     setRoute(next);
   }, []);
 
   const openPluginSettings = useCallback((pluginId: string) => {
-    setSettingsPluginId(pluginId);
+    setSettingsFocus({ section: "plugins", pluginId, nonce: Date.now() });
+    setRoute(coreRoute("settings"));
+  }, []);
+
+  const openSettings = useCallback((section: SettingsSectionId) => {
+    setSettingsFocus({ section, nonce: Date.now() });
     setRoute(coreRoute("settings"));
   }, []);
 
@@ -106,6 +112,7 @@ export default function App() {
           {route.kind === "core" && route.page === "instances" ? (
             <InstancesPage
               onNavigate={navigate}
+              onOpenSettings={openSettings}
               onShowHistory={(instanceId) => {
                 setHistoryInstanceId(instanceId);
                 setRoute(coreRoute("history"));
@@ -119,7 +126,7 @@ export default function App() {
             <PluginsPage onNavigate={navigate} onOpenSettings={openPluginSettings} />
           ) : null}
           {route.kind === "core" && route.page === "settings" ? (
-            <SettingsPage status={status.data} focusPluginId={settingsPluginId} />
+            <SettingsPage status={status.data} focus={settingsFocus} />
           ) : null}
           {route.kind === "plugin" ? (
             <PluginPageView

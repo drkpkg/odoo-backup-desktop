@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Cloud, CloudOff, ExternalLink } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronRight, Cloud, CloudOff, ExternalLink } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 
 import { Alert } from "../../components/Alert";
 import { Badge } from "../../components/Badge";
@@ -14,12 +14,16 @@ import { errorMessage, toAppError } from "../../lib/errors";
 import { ipc } from "../../lib/ipc";
 import { queryKeys } from "../../lib/query";
 import type { DriveSettings, DriveStatus, Settings } from "../../lib/types";
+import { DirtyBadge, settingsAnchor, useReportDirty } from "./sections";
 
 export function DriveSection({ settings }: { settings: Settings }) {
   const drive = useQuery({ queryKey: queryKeys.driveStatus, queryFn: () => ipc.getDriveStatus() });
 
   return (
     <Card
+      id={settingsAnchor("drive")}
+      className="scroll-mt-16"
+      aside={<DirtyBadge section="drive" />}
       title={
         <span className="flex items-center gap-2">
           <Cloud size={16} className="text-accent" /> Google Drive
@@ -32,8 +36,8 @@ export function DriveSection({ settings }: { settings: Settings }) {
       {drive.data ? (
         <div className="space-y-6">
           <AccountBlock status={drive.data} />
-          <ClientBlock status={drive.data} />
           <OptionsBlock settings={settings} />
+          <AdvancedBlock status={drive.data} />
         </div>
       ) : null}
     </Card>
@@ -128,7 +132,47 @@ function AccountBlock({ status }: { status: DriveStatus }) {
   );
 }
 
-function ClientBlock({ status }: { status: DriveStatus }) {
+/**
+ * El cliente OAuth solo se configura una vez: queda plegado salvo que falte (sin él no se puede
+ * conectar la cuenta). Se mantiene montado para no perder lo escrito al plegarlo.
+ */
+function AdvancedBlock({ status }: { status: DriveStatus }) {
+  const [open, setOpen] = useState(!status.configured);
+  const [dirty, setDirty] = useState(false);
+  const regionId = useId();
+
+  useEffect(() => {
+    if (!status.configured) setOpen(true);
+  }, [status.configured]);
+
+  return (
+    <section aria-label="Configuración avanzada" className="border-t border-border pt-4">
+      <h3>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={regionId}
+          onClick={() => setOpen((current) => !current)}
+          className="-mx-1 flex w-[calc(100%+0.5rem)] items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-surface-2/60"
+        >
+          <ChevronRight size={15} className={`shrink-0 text-muted transition-transform ${open ? "rotate-90" : ""}`} aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">Configuración avanzada</span>
+            <span className="block truncate text-xs text-muted">
+              {status.configured ? `Cliente OAuth: ${status.clientId ?? "configurado"}` : "Falta el cliente OAuth: necesario para conectar la cuenta."}
+            </span>
+          </span>
+          {dirty && !open ? <span className="shrink-0 text-xs font-medium text-warning">Cambios sin guardar</span> : null}
+        </button>
+      </h3>
+      <div id={regionId} hidden={!open} className="pt-3">
+        <ClientBlock status={status} onDirtyChange={setDirty} />
+      </div>
+    </section>
+  );
+}
+
+function ClientBlock({ status, onDirtyChange }: { status: DriveStatus; onDirtyChange: (dirty: boolean) => void }) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [clientId, setClientId] = useState(status.clientId ?? "");
@@ -140,6 +184,8 @@ function ClientBlock({ status }: { status: DriveStatus }) {
   useEffect(() => setClientId(status.clientId ?? ""), [status.clientId]);
 
   const dirty = clientId.trim() !== (status.clientId ?? "") || clientSecret.length > 0 || removeSecret;
+  useReportDirty("drive", "client", dirty);
+  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
 
   const save = async () => {
     setSaving(true);
@@ -161,9 +207,9 @@ function ClientBlock({ status }: { status: DriveStatus }) {
   };
 
   return (
-    <section aria-label="Cliente OAuth" className="space-y-3 border-t border-border pt-5">
+    <div className="space-y-3">
       <div>
-        <h3 className="text-sm font-semibold">Cliente OAuth de escritorio</h3>
+        <h4 className="text-sm font-semibold">Cliente OAuth de escritorio</h4>
         <details className="mt-1 text-xs text-muted">
           <summary className="cursor-pointer select-none hover:text-fg">¿Cómo crear el cliente?</summary>
           <ol className="mt-2 list-decimal space-y-1 pl-5">
@@ -229,7 +275,7 @@ function ClientBlock({ status }: { status: DriveStatus }) {
         <Alert tone="warning">Al cambiar el Client ID tendrás que volver a conectar la cuenta.</Alert>
       ) : null}
       {error ? <Alert tone="danger">{error}</Alert> : null}
-    </section>
+    </div>
   );
 }
 
@@ -243,6 +289,7 @@ function OptionsBlock({ settings }: { settings: Settings }) {
   useEffect(() => setValues(settings.drive), [settings.drive]);
 
   const dirty = JSON.stringify(values) !== JSON.stringify(settings.drive);
+  useReportDirty("drive", "options", dirty);
   const set = <K extends keyof DriveSettings>(key: K, value: DriveSettings[K]) => setValues((v) => ({ ...v, [key]: value }));
 
   const save = async () => {

@@ -15,6 +15,7 @@ import { ipc } from "../../lib/ipc";
 import { queryKeys } from "../../lib/query";
 import type { AppStatus } from "../../lib/types";
 import { MIN_MASTER_PASSWORD_LENGTH } from "../vault/VaultGate";
+import { settingsAnchor } from "./sections";
 
 export function SecuritySection({ status }: { status: AppStatus }) {
   const queryClient = useQueryClient();
@@ -40,7 +41,7 @@ export function SecuritySection({ status }: { status: AppStatus }) {
   };
 
   return (
-    <Card title="Seguridad de la bóveda" description="Cómo se abre la bóveda cifrada que guarda las credenciales.">
+    <Card id={settingsAnchor("security")} className="scroll-mt-16" title="Seguridad de la bóveda" description="Cómo se abre la bóveda cifrada que guarda las credenciales.">
       <div className="space-y-5">
         <div className="flex flex-wrap gap-2">
           <Badge tone={keychainEnabled ? "success" : "neutral"}>

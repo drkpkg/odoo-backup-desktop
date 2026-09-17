@@ -24,6 +24,12 @@ The UI is a thin client over the Rust commands documented in `docs/architecture.
 - Backup progress is shown only in `BackupJobsPanel` (one bar per job, collapsible, one stage-only
   `role="status"` per job). Elsewhere show a short state and link to it with `showJob(jobId)` from
   `useBackupJobs()`; never render another `ProgressBar` for the same job.
+- First use: `onboardingState()` (`src/features/instances/onboarding.ts`) derives the getting-started
+  steps from data (no stored progress); the guide disappears after the first completed backup.
+  The browser mock supports `?mock=unlocked,empty` to test it.
+- Settings sections are anchors (`settingsAnchor`, `SettingsFocus` in `src/features/settings/sections.tsx`);
+  open a section from elsewhere with `onOpenSettings(section)`. Editable blocks call
+  `useReportDirty(section, key, dirty)` so the nav and the card show "Cambios sin guardar".
 - Verify layout changes with the headless Chromium checks at 1180×780 and 900×600, light and dark.
 
 ## Stack

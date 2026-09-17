@@ -9,6 +9,7 @@ import { errorMessage } from "../../lib/errors";
 import { ipc } from "../../lib/ipc";
 import { queryKeys } from "../../lib/query";
 import type { PluginSettings, SchemaProperty } from "../../lib/types";
+import { useReportDirty } from "../settings/sections";
 import {
   buildSubmission,
   fieldKind,
@@ -36,6 +37,8 @@ export function SchemaForm({ pluginId, settings }: { pluginId: string; settings:
   const [removed, setRemoved] = useState<string[]>([]);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
+  const dirty = removed.length > 0 || JSON.stringify(draft) !== JSON.stringify(initialDraft(schema, settings));
+  useReportDirty("plugins", pluginId, dirty);
 
   // Nuevos datos del backend (guardado o recarga): reiniciar el borrador y descartar secretos escritos.
   useEffect(() => {

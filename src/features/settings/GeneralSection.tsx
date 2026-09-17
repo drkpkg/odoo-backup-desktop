@@ -11,6 +11,7 @@ import { errorMessage } from "../../lib/errors";
 import { ipc } from "../../lib/ipc";
 import { queryKeys } from "../../lib/query";
 import type { Settings } from "../../lib/types";
+import { DirtyBadge, settingsAnchor, useReportDirty } from "./sections";
 
 export const PREPARE_TIMEOUT_RANGE = { min: 5, max: 720 } as const;
 export const CONCURRENCY_OPTIONS = [1, 2, 3, 4] as const;
@@ -40,6 +41,7 @@ export function GeneralSection({ settings }: { settings: Settings }) {
   useEffect(() => setValues(pickGeneral(settings)), [settings]);
 
   const dirty = JSON.stringify(values) !== JSON.stringify(pickGeneral(settings));
+  useReportDirty("backups", "general", dirty);
   const set = <K extends keyof GeneralValues>(key: K, value: GeneralValues[K]) => setValues((v) => ({ ...v, [key]: value }));
 
   const pickFolder = async () => {
@@ -73,6 +75,9 @@ export function GeneralSection({ settings }: { settings: Settings }) {
 
   return (
     <Card
+      id={settingsAnchor("backups")}
+      className="scroll-mt-16"
+      aside={<DirtyBadge section="backups" />}
       title="Respaldos"
       description="Dónde se guardan los archivos y cómo se ejecutan."
       footer={

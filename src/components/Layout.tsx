@@ -13,13 +13,42 @@ export function PageHeader({ title, description, actions }: { title: string; des
   );
 }
 
-export function Card({ title, description, children, footer, className = "" }: { title?: ReactNode; description?: ReactNode; children: ReactNode; footer?: ReactNode; className?: string }) {
+export function Card({
+  title,
+  description,
+  children,
+  footer,
+  className = "",
+  id,
+  aside,
+}: {
+  title?: ReactNode;
+  description?: ReactNode;
+  children: ReactNode;
+  footer?: ReactNode;
+  className?: string;
+  /** Destino de navegación interna: la sección puede recibir el foco al saltar a ella. */
+  id?: string;
+  /** Junto al título (p. ej. "Cambios sin guardar"). */
+  aside?: ReactNode;
+}) {
+  const titleId = id ? `${id}-title` : undefined;
   return (
-    <section className={`rounded-xl border border-border bg-surface shadow-card ${className}`}>
+    <section
+      id={id}
+      tabIndex={id ? -1 : undefined}
+      aria-labelledby={title ? titleId : undefined}
+      className={`rounded-xl border border-border bg-surface shadow-card focus:outline-none ${className}`}
+    >
       {title ? (
-        <header className="border-b border-border px-5 py-3.5">
-          <h2 className="text-[15px] font-semibold">{title}</h2>
-          {description ? <p className="mt-0.5 text-[13px] text-muted">{description}</p> : null}
+        <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-3.5">
+          <div className="min-w-0">
+            <h2 id={titleId} className="text-[15px] font-semibold">
+              {title}
+            </h2>
+            {description ? <p className="mt-0.5 text-[13px] text-muted">{description}</p> : null}
+          </div>
+          {aside ? <div className="shrink-0 pt-0.5">{aside}</div> : null}
         </header>
       ) : null}
       <div className="px-5 py-4">{children}</div>

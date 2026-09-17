@@ -12,16 +12,25 @@ import type { PluginView } from "../../lib/types";
 import { pluginIcon } from "../plugins/icons";
 import { SchemaForm } from "../plugins/SchemaForm";
 import { usePlugins } from "../plugins/usePlugins";
+import { DirtyBadge, settingsAnchor } from "./sections";
+
+/** Plugins que muestran ajustes aquí. */
+export function pluginsWithSettings(plugins: PluginView[] | undefined): PluginView[] {
+  return (plugins ?? []).filter((plugin) => plugin.hasSettings && plugin.status !== "error" && plugin.status !== "shadowed");
+}
 
 /** Ajustes de los plugins que declaran un esquema; `focusPluginId` abre y enfoca uno. */
 export function PluginsSettingsSection({ focusPluginId }: { focusPluginId: string | null }) {
   const plugins = usePlugins();
-  const withSettings = (plugins.data ?? []).filter((plugin) => plugin.hasSettings && plugin.status !== "error" && plugin.status !== "shadowed");
+  const withSettings = pluginsWithSettings(plugins.data);
 
   if (plugins.isSuccess && withSettings.length === 0 && !focusPluginId) return null;
 
   return (
     <Card
+      id={settingsAnchor("plugins")}
+      className="scroll-mt-16"
+      aside={<DirtyBadge section="plugins" />}
       title={
         <span className="flex items-center gap-2">
           <Puzzle size={16} className="text-accent" /> Plugins

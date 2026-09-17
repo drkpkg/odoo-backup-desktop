@@ -4,6 +4,7 @@
 //   ?mock=fresh        sin bóveda creada
 //   ?mock=nokeychain   sin llavero del sistema (requiere contraseña maestra)
 //   ?mock=unlocked     bóveda ya desbloqueada
+//   ?mock=empty        sin instancias ni historial (combinable: ?mock=unlocked,empty)
 
 import helloManifest from "../../examples/plugins/hello-obd/plugin.json";
 import helloSettingsSchema from "../../examples/plugins/hello-obd/settings.schema.json";
@@ -116,6 +117,8 @@ export type MockOptions = {
   vaultExists?: boolean;
   unlocked?: boolean;
   keychainAvailable?: boolean;
+  /** Bóveda sin instancias ni historial (primer uso). */
+  empty?: boolean;
   /** Multiplicador de tiempos (0 = inmediato en pruebas). */
   speed?: number;
 };
@@ -207,6 +210,7 @@ function parseMockOptions(): MockOptions {
     vaultExists: !flags.includes("fresh"),
     unlocked: flags.includes("unlocked"),
     keychainAvailable: !flags.includes("nokeychain"),
+    empty: flags.includes("empty"),
   };
 }
 
@@ -261,7 +265,7 @@ export class MockBackend implements Backend {
       keychainEnabled: exists && keychainAvailable,
       passwordEnabled: exists,
     };
-    if (exists) this.seed();
+    if (exists && !options.empty) this.seed();
     this.seedPlugins();
   }
 
