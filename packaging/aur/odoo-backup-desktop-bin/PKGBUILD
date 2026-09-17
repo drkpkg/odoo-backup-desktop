@@ -7,9 +7,9 @@
 
 pkgname=odoo-backup-desktop-bin
 _pkgname=odoo-backup-desktop
-pkgver=0.2.0
+pkgver=0.3.0
 pkgrel=1
-pkgdesc="Backups .zip de instancias Odoo 15-19 con credenciales cifradas y subida a Google Drive"
+pkgdesc="Respaldos .zip de instancias Odoo 15-19 con credenciales cifradas y subida a Google Drive"
 arch=('x86_64')
 url="https://github.com/drkpkg/odoo-backup-desktop"
 license=('MIT')

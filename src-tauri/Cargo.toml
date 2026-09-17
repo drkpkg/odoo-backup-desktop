@@ -1,6 +1,6 @@
 [package]
 name = "odoo-backup-desktop"
-description = "Odoo Backup Desktop: backups de instancias Odoo"
+description = "Odoo Backup Desktop: respaldos de instancias Odoo"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

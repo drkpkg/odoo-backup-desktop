@@ -47,8 +47,8 @@
       "nsis"
     ],
     "category": "Utility",
-    "shortDescription": "Backups de instancias Odoo",
-    "longDescription": "Odoo Backup Desktop descarga backups .zip de instancias Odoo 15 a 19, guarda las credenciales cifradas y sube los backups a Google Drive.",
+    "shortDescription": "Respaldos de instancias Odoo",
+    "longDescription": "Odoo Backup Desktop descarga respaldos .zip de instancias Odoo 15 a 19, guarda las credenciales cifradas y sube los respaldos a Google Drive.",
     "publisher": "Felix Daniel Coca Calvimontes",
     "copyright": "© 2026 Felix Daniel Coca Calvimontes",
     "license": "MIT",

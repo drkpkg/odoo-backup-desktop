@@ -1,7 +1,7 @@
 # Odoo Backup Desktop
 
-Aplicación de escritorio (Linux y Windows) para descargar backups `.zip` de instancias Odoo 15.0–19.0,
-guardar las credenciales cifradas y subir los backups a Google Drive.
+Aplicación de escritorio (Linux y Windows) para descargar respaldos `.zip` de instancias Odoo 15.0–19.0,
+guardar las credenciales cifradas y subir los respaldos a Google Drive.
 
 - Detecta la versión de Odoo y elige el protocolo: **XML-RPC** (15–18) o **JSON-2** (19).
 - Dos transportes de backup: **gestor de bases de datos** (`/web/database/backup`, requiere

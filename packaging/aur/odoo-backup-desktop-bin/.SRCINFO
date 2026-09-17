@@ -1,6 +1,6 @@
 pkgbase = odoo-backup-desktop-bin
-	pkgdesc = Backups .zip de instancias Odoo 15-19 con credenciales cifradas y subida a Google Drive
-	pkgver = 0.2.0
+	pkgdesc = Respaldos .zip de instancias Odoo 15-19 con credenciales cifradas y subida a Google Drive
+	pkgver = 0.3.0
 	pkgrel = 1
 	url = https://github.com/drkpkg/odoo-backup-desktop
 	arch = x86_64
@@ -19,7 +19,7 @@ pkgbase = odoo-backup-desktop-bin
 	conflicts = odoo-backup-desktop
 	options = !strip
 	options = !debug
-	source_x86_64 = odoo-backup-desktop-0.2.0-x86_64.deb::https://github.com/drkpkg/odoo-backup-desktop/releases/download/v0.2.0/odoo-backup-desktop_0.2.0_amd64.deb
+	source_x86_64 = odoo-backup-desktop-0.3.0-x86_64.deb::https://github.com/drkpkg/odoo-backup-desktop/releases/download/v0.3.0/odoo-backup-desktop_0.3.0_amd64.deb
 	sha256sums_x86_64 = SKIP
 
 pkgname = odoo-backup-desktop-bin
