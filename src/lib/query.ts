@@ -7,6 +7,10 @@ export const queryKeys = {
   historyAll: ["history"] as const,
   settings: ["settings"] as const,
   driveStatus: ["drive-status"] as const,
+  plugins: ["plugins"] as const,
+  pluginConfig: ["plugin-config"] as const,
+  pluginSettings: (pluginId: string) => ["plugin-settings", pluginId] as const,
+  pluginSettingsAll: ["plugin-settings"] as const,
 };
 
 export function createQueryClient(): QueryClient {

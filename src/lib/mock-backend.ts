@@ -5,6 +5,9 @@
 //   ?mock=nokeychain   sin llavero del sistema (requiere contraseña maestra)
 //   ?mock=unlocked     bóveda ya desbloqueada
 
+import helloManifest from "../../examples/plugins/hello-obd/plugin.json";
+import helloSettingsSchema from "../../examples/plugins/hello-obd/settings.schema.json";
+import { validateSubmissionLikeBackend } from "../features/plugins/schemaForm";
 import type { Backend } from "./backend";
 import { AppError } from "./errors";
 import type {
@@ -17,13 +20,97 @@ import type {
   InstanceInput,
   InstanceView,
   OdooVersion,
+  PluginConfig,
+  PluginIssue,
+  PluginSettings,
+  PluginsChangedPayload,
+  PluginView,
+  PluginWindowContext,
   ProbeReport,
   ProbeRequest,
   ProbeWarning,
+  SchemaProperty,
   Settings,
+  SettingsSchema,
   TransportKind,
   VaultLockedPayload,
 } from "./types";
+
+/** Evento DOM con el que el mock pide mostrar una ventana de plugin (no hay ventanas nativas). */
+export const MOCK_OPEN_WINDOW_EVENT = "obd-mock-open-plugin-window";
+export type MockOpenWindowDetail = { pluginId: string; windowId: string; params: Record<string, unknown> };
+
+/** Base URL servida por el middleware de Vite en `pnpm dev` (vite.config.ts). */
+export const MOCK_PLUGINS_BASE = "/__obd-plugins/";
+
+type ManifestLike = {
+  id: string;
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  homepage?: string;
+  contributes?: {
+    pages?: { id: string; title: string; path: string }[];
+    menus?: { id: string; location: string; label: string; icon?: string; page?: string; window?: string }[];
+    windows?: { id: string; title: string; path: string; width?: number; height?: number }[];
+    settings?: string;
+    destinations?: { id: string; label: string }[];
+    hooks?: string[];
+  };
+  permissions?: { network?: string[] };
+  backend?: string | null;
+};
+
+type MockPlugin = {
+  view: Omit<PluginView, "status" | "revision" | "baseUrl">;
+  schema: SettingsSchema | null;
+  broken: boolean;
+};
+
+function schemaFromFile(raw: { type: string; title?: string; description?: string; properties: Record<string, unknown>; required?: string[] }): SettingsSchema {
+  return {
+    type: "object",
+    title: raw.title ?? null,
+    description: raw.description ?? null,
+    properties: raw.properties as Record<string, SchemaProperty>,
+    propertyOrder: Object.keys(raw.properties),
+    required: raw.required ?? [],
+  };
+}
+
+function viewFromManifest(manifest: ManifestLike, source: PluginView["source"], path: string, issues: PluginIssue[] = []): MockPlugin["view"] {
+  const contributes = manifest.contributes ?? {};
+  return {
+    id: manifest.id,
+    name: manifest.name,
+    version: manifest.version,
+    description: manifest.description ?? null,
+    author: manifest.author ?? null,
+    homepage: manifest.homepage ?? null,
+    source,
+    path,
+    issues,
+    pages: contributes.pages ?? [],
+    menus: (contributes.menus ?? []).map((menu) => ({
+      id: menu.id,
+      location: menu.location === "instance_actions" ? "instance_actions" : "sidebar",
+      label: menu.label,
+      icon: menu.icon ?? null,
+      page: menu.page ?? null,
+      window: menu.window ?? null,
+    })),
+    windows: (contributes.windows ?? []).map((w) => ({ id: w.id, title: w.title, path: w.path, width: w.width ?? null, height: w.height ?? null })),
+    hasSettings: Boolean(contributes.settings),
+    destinations: contributes.destinations ?? [],
+    hooks: contributes.hooks ?? [],
+    permissions: { network: manifest.permissions?.network ?? [] },
+    hasBackend: Boolean(manifest.backend),
+  };
+}
+
+const PLUGIN_STORAGE_KEY = /^[A-Za-z0-9._-]{1,128}$/;
+const PLUGIN_STORAGE_LIMIT = 1024 * 1024;
 
 export type MockOptions = {
   vaultExists?: boolean;
@@ -150,6 +237,19 @@ export class MockBackend implements Backend {
   };
   private driveConnect: { timer: ReturnType<typeof setTimeout>; reject: (e: unknown) => void } | null = null;
 
+  private plugins: MockPlugin[] = [];
+  private pluginRevision = 1;
+  private pluginConfig: PluginConfig = {
+    developerMode: true,
+    devPluginPaths: ["/home/usuario/dev/odoo-backup-desktop/examples/plugins/hello-obd"],
+    userPluginsDir: "/home/usuario/.local/share/io.github.drkpkg.odoo-backup-desktop/plugins",
+  };
+  private disabledPlugins = new Set<string>(["s3-storage"]);
+  private pluginValues = new Map<string, Record<string, unknown>>();
+  private pluginSecrets = new Map<string, Map<string, string>>();
+  private pluginData = new Map<string, Record<string, unknown>>();
+  private pluginHandlers = new Set<(payload: PluginsChangedPayload) => void>();
+
   constructor(options: MockOptions = {}) {
     this.speed = options.speed ?? 1;
     const keychainAvailable = options.keychainAvailable ?? true;
@@ -162,6 +262,7 @@ export class MockBackend implements Backend {
       passwordEnabled: exists,
     };
     if (exists) this.seed();
+    this.seedPlugins();
   }
 
   // --- utilidades ---------------------------------------------------------
@@ -783,6 +884,227 @@ export class MockBackend implements Backend {
     await this.delay(300);
     this.drive = { ...this.drive, connected: false, email: null, displayName: null };
     return { ...this.drive };
+  }
+
+  // --- Plugins --------------------------------------------------------------
+
+  private seedPlugins(): void {
+    const hello = helloManifest as ManifestLike;
+    this.plugins = [
+      {
+        view: viewFromManifest(hello, "dev", "/home/usuario/dev/odoo-backup-desktop/examples/plugins/hello-obd"),
+        schema: schemaFromFile(helloSettingsSchema),
+        broken: false,
+      },
+      {
+        view: viewFromManifest(
+          {
+            id: "s3-storage",
+            name: "Amazon S3",
+            version: "0.3.0",
+            description: "Sube los backups a un bucket de S3 (requiere el backend de plugins).",
+            author: "Felix Daniel Coca Calvimontes",
+            contributes: { destinations: [{ id: "s3", label: "Amazon S3" }], hooks: ["after_backup"] },
+            permissions: { network: ["*.amazonaws.com"] },
+            backend: "backend.wasm",
+          },
+          "user",
+          "/home/usuario/.local/share/io.github.drkpkg.odoo-backup-desktop/plugins/s3-storage",
+          [
+            {
+              severity: "warning",
+              code: "backend_not_supported",
+              message: "backend, destinations and hooks require plugin backend support (phase B)",
+              field: "backend",
+            },
+          ],
+        ),
+        schema: null,
+        broken: false,
+      },
+      {
+        view: {
+          ...viewFromManifest(
+            { id: "reportes-viejos", name: "reportes-viejos", version: "" },
+            "user",
+            "/home/usuario/.local/share/io.github.drkpkg.odoo-backup-desktop/plugins/reportes-viejos",
+            [
+              {
+                severity: "error",
+                code: "manifest_invalid",
+                message: "plugin.json is invalid: unknown field `menu` (line 6, column 9)",
+                field: null,
+              },
+            ],
+          ),
+          version: null,
+        },
+        schema: null,
+        broken: true,
+      },
+    ];
+    this.pluginValues.set("hello-obd", { endpoint: "https://api.example.com", retries: 3, mode: "seguro", notify: false });
+    this.pluginSecrets.set("hello-obd", new Map([["token", "demo-token-123"]]));
+  }
+
+  private pluginViews(): PluginView[] {
+    return this.plugins
+      .map(({ view, broken }) => ({
+        ...clone(view),
+        status: broken ? ("error" as const) : this.disabledPlugins.has(view.id) ? ("disabled" as const) : ("enabled" as const),
+        revision: this.pluginRevision,
+        baseUrl: `${MOCK_PLUGINS_BASE}${view.id}/`,
+      }))
+      .sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  private findPlugin(pluginId: string, requireEnabled = false): MockPlugin {
+    const plugin = this.plugins.find((p) => p.view.id === pluginId && !p.broken);
+    if (!plugin) throw new AppError("plugin_not_found", `plugin ${pluginId} not found`);
+    if (requireEnabled && this.disabledPlugins.has(pluginId)) throw new AppError("plugin_disabled", `plugin ${pluginId} is disabled`);
+    return plugin;
+  }
+
+  private emitPluginsChanged(reason: PluginsChangedPayload["reason"]): void {
+    for (const handler of this.pluginHandlers) handler({ reason });
+  }
+
+  private settingsFor(pluginId: string, schema: SettingsSchema): PluginSettings {
+    const stored = this.pluginValues.get(pluginId) ?? {};
+    const values: Record<string, unknown> = {};
+    for (const key of schema.propertyOrder) {
+      const prop = schema.properties[key];
+      if (!prop || prop.secret || prop.format === "password") continue;
+      const value = key in stored ? stored[key] : prop.default;
+      if (value !== undefined) values[key] = value;
+    }
+    return { schema: clone(schema), values, secretsSet: [...(this.pluginSecrets.get(pluginId)?.keys() ?? [])] };
+  }
+
+  async listPlugins(): Promise<PluginView[]> {
+    await this.delay(120);
+    return this.pluginViews();
+  }
+
+  async reloadPlugins(): Promise<PluginView[]> {
+    await this.delay(350);
+    this.pluginRevision += 1;
+    this.emitPluginsChanged("reload");
+    return this.pluginViews();
+  }
+
+  async setPluginEnabled(pluginId: string, enabled: boolean): Promise<PluginView[]> {
+    await this.delay(200);
+    this.findPlugin(pluginId);
+    if (enabled) this.disabledPlugins.delete(pluginId);
+    else this.disabledPlugins.add(pluginId);
+    this.emitPluginsChanged("config");
+    return this.pluginViews();
+  }
+
+  async getPluginConfig(): Promise<PluginConfig> {
+    await this.delay(80);
+    return clone(this.pluginConfig);
+  }
+
+  async setDeveloperMode(enabled: boolean): Promise<PluginConfig> {
+    await this.delay(150);
+    this.pluginConfig = { ...this.pluginConfig, developerMode: enabled };
+    this.emitPluginsChanged("config");
+    return clone(this.pluginConfig);
+  }
+
+  async addDevPlugin(path: string): Promise<PluginConfig> {
+    await this.delay(200);
+    if (!path.startsWith("/")) throw new AppError("plugin_path_invalid", "path must be absolute");
+    if (!this.pluginConfig.devPluginPaths.includes(path)) {
+      this.pluginConfig = { ...this.pluginConfig, devPluginPaths: [...this.pluginConfig.devPluginPaths, path] };
+    }
+    this.emitPluginsChanged("config");
+    return clone(this.pluginConfig);
+  }
+
+  async removeDevPlugin(path: string): Promise<PluginConfig> {
+    await this.delay(150);
+    this.pluginConfig = { ...this.pluginConfig, devPluginPaths: this.pluginConfig.devPluginPaths.filter((p) => p !== path) };
+    this.emitPluginsChanged("config");
+    return clone(this.pluginConfig);
+  }
+
+  async openPluginsFolder(): Promise<void> {
+    await this.delay(100);
+    console.info("[mock] open plugins folder", this.pluginConfig.userPluginsDir);
+  }
+
+  async getPluginSettings(pluginId: string): Promise<PluginSettings> {
+    await this.delay(120);
+    const plugin = this.findPlugin(pluginId);
+    if (!plugin.schema) throw new AppError("plugin_no_settings", "the plugin has no settings");
+    return this.settingsFor(pluginId, plugin.schema);
+  }
+
+  async savePluginSettings(pluginId: string, values: Record<string, unknown>): Promise<PluginSettings> {
+    await this.delay(300);
+    const plugin = this.findPlugin(pluginId);
+    if (!plugin.schema) throw new AppError("plugin_no_settings", "the plugin has no settings");
+    const secrets = this.pluginSecrets.get(pluginId) ?? new Map<string, string>();
+    const result = validateSubmissionLikeBackend(plugin.schema, values, this.pluginValues.get(pluginId) ?? {}, [...secrets.keys()]);
+    if (!result.ok) throw new AppError("plugin_settings_invalid", JSON.stringify(result.errors));
+    this.pluginValues.set(pluginId, result.values);
+    for (const [key, secret] of Object.entries(result.setSecrets)) secrets.set(key, secret);
+    for (const key of result.removeSecrets) secrets.delete(key);
+    this.pluginSecrets.set(pluginId, secrets);
+    return this.settingsFor(pluginId, plugin.schema);
+  }
+
+  async pluginStorageGet(pluginId: string, key: string): Promise<unknown> {
+    await this.delay(40);
+    this.findPlugin(pluginId, true);
+    if (!PLUGIN_STORAGE_KEY.test(key)) throw new AppError("plugin_storage_key_invalid", "invalid key");
+    const data = this.pluginData.get(pluginId) ?? {};
+    return key in data ? clone(data[key]) : null;
+  }
+
+  async pluginStorageSet(pluginId: string, key: string, value: unknown): Promise<void> {
+    await this.delay(60);
+    this.findPlugin(pluginId, true);
+    if (!PLUGIN_STORAGE_KEY.test(key)) throw new AppError("plugin_storage_key_invalid", "invalid key");
+    const data = { ...(this.pluginData.get(pluginId) ?? {}) };
+    if (value === null || value === undefined) delete data[key];
+    else data[key] = clone(value);
+    if (JSON.stringify(data).length > PLUGIN_STORAGE_LIMIT) throw new AppError("plugin_storage_limit", "storage limit exceeded");
+    this.pluginData.set(pluginId, data);
+  }
+
+  async openPluginWindow(pluginId: string, windowId: string, params?: Record<string, unknown>): Promise<void> {
+    await this.delay(80);
+    const plugin = this.findPlugin(pluginId, true);
+    if (!plugin.view.windows.some((w) => w.id === windowId)) throw new AppError("plugin_window_not_found", "window not declared");
+    if (typeof window !== "undefined") {
+      const detail: MockOpenWindowDetail = { pluginId, windowId, params: clone(params ?? {}) };
+      window.dispatchEvent(new CustomEvent(MOCK_OPEN_WINDOW_EVENT, { detail }));
+    }
+  }
+
+  async getPluginWindowContext(): Promise<PluginWindowContext> {
+    throw new AppError("unsupported_surface", "the browser mock has no plugin windows");
+  }
+
+  async onPluginsChanged(handler: (payload: PluginsChangedPayload) => void): Promise<() => void> {
+    this.pluginHandlers.add(handler);
+    return () => this.pluginHandlers.delete(handler);
+  }
+
+  async requestOpenPluginSettings(pluginId: string): Promise<void> {
+    console.info("[mock] open plugin settings", pluginId);
+  }
+
+  async onOpenPluginSettings(): Promise<() => void> {
+    return () => undefined;
+  }
+
+  windowLabel(): string {
+    return "main";
   }
 
   async pickDirectory(): Promise<string | null> {

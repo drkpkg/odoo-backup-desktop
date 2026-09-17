@@ -18,10 +18,12 @@ tauri-build = { version = "2.6", features = [] }
 
 [dependencies]
 obd-odoo.workspace = true
+obd-plugins.workspace = true
 obd-storage.workspace = true
 obd-vault.workspace = true
 
 chrono.workspace = true
+notify-debouncer-mini = "0.7"
 reqwest.workspace = true
 rusqlite = { version = "0.40", features = ["bundled"] }
 secrecy.workspace = true

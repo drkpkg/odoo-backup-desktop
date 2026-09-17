@@ -9,14 +9,15 @@ import { queryKeys } from "../../lib/query";
 import type { AppStatus } from "../../lib/types";
 import { DriveSection } from "./DriveSection";
 import { GeneralSection } from "./GeneralSection";
+import { PluginsSettingsSection } from "./PluginsSettingsSection";
 import { SecuritySection } from "./SecuritySection";
 
-export function SettingsPage({ status }: { status: AppStatus }) {
+export function SettingsPage({ status, focusPluginId = null }: { status: AppStatus; focusPluginId?: string | null }) {
   const settings = useQuery({ queryKey: queryKeys.settings, queryFn: () => ipc.getSettings() });
 
   return (
     <>
-      <PageHeader title="Ajustes" description="Carpeta de descarga, retención, seguridad de la bóveda y Google Drive." />
+      <PageHeader title="Ajustes" description="Carpeta de descarga, retención, seguridad de la bóveda, Google Drive y plugins." />
       <div className="mx-auto max-w-3xl space-y-5 px-6 py-5">
         {settings.isPending ? <Spinner label="Cargando ajustes…" /> : null}
         {settings.isError ? <Alert tone="danger">{errorMessage(settings.error)}</Alert> : null}
@@ -25,6 +26,7 @@ export function SettingsPage({ status }: { status: AppStatus }) {
             <GeneralSection settings={settings.data} />
             <SecuritySection status={status} />
             <DriveSection settings={settings.data} />
+            <PluginsSettingsSection focusPluginId={focusPluginId} />
           </>
         ) : null}
       </div>

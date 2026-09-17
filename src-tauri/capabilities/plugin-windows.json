@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "plugin-windows",
+  "description": "Plugin windows: plugin shell and bridge commands only; no vault, instance or backup management.",
+  "windows": ["plugin--*"],
+  "permissions": [
+    "core:app:default",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:event:allow-emit-to",
+    "core:window:default",
+    "allow-plugin-window-commands"
+  ]
+}

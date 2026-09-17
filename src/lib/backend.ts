@@ -6,6 +6,11 @@ import type {
   HistoryEntry,
   InstanceInput,
   InstanceView,
+  PluginConfig,
+  PluginSettings,
+  PluginsChangedPayload,
+  PluginView,
+  PluginWindowContext,
   ProbeReport,
   ProbeRequest,
   Settings,
@@ -51,6 +56,32 @@ export interface Backend {
   connectDrive(): Promise<DriveStatus>;
   cancelDriveConnect(): Promise<void>;
   disconnectDrive(): Promise<DriveStatus>;
+
+  // Plugins (docs/plugins.md)
+  listPlugins(): Promise<PluginView[]>;
+  reloadPlugins(): Promise<PluginView[]>;
+  setPluginEnabled(pluginId: string, enabled: boolean): Promise<PluginView[]>;
+  getPluginConfig(): Promise<PluginConfig>;
+  setDeveloperMode(enabled: boolean): Promise<PluginConfig>;
+  addDevPlugin(path: string): Promise<PluginConfig>;
+  removeDevPlugin(path: string): Promise<PluginConfig>;
+  openPluginsFolder(): Promise<void>;
+  getPluginSettings(pluginId: string): Promise<PluginSettings>;
+  /** Secretos: string = reemplazar, null = borrar, ausente = conservar. */
+  savePluginSettings(pluginId: string, values: Record<string, unknown>): Promise<PluginSettings>;
+  pluginStorageGet(pluginId: string, key: string): Promise<unknown>;
+  /** `value` null borra la clave. */
+  pluginStorageSet(pluginId: string, key: string, value: unknown): Promise<void>;
+  openPluginWindow(pluginId: string, windowId: string, params?: Record<string, unknown>): Promise<void>;
+  /** Contexto de la ventana de plugin actual (solo en ventanas `plugin--*`). */
+  getPluginWindowContext(): Promise<PluginWindowContext>;
+  onPluginsChanged(handler: (payload: PluginsChangedPayload) => void): Promise<() => void>;
+  /** Desde una ventana de plugin: pide a la ventana principal abrir los ajustes del plugin. */
+  requestOpenPluginSettings(pluginId: string): Promise<void>;
+  /** Ventana principal: escucha las peticiones anteriores. */
+  onOpenPluginSettings(handler: (pluginId: string) => void): Promise<() => void>;
+  /** Etiqueta de la ventana actual ("main" o "plugin--…"). */
+  windowLabel(): string;
 
   // Diálogos nativos
   pickDirectory(defaultPath?: string): Promise<string | null>;

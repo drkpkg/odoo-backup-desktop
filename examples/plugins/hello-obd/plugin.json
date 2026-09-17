@@ -1,0 +1,22 @@
+{
+  "id": "hello-obd",
+  "name": "Hola OBD",
+  "version": "0.1.0",
+  "apiVersion": 1,
+  "description": "Plugin de ejemplo: página, menú lateral, ventana, acción por instancia y ajustes con todos los tipos de campo.",
+  "author": "Felix Daniel Coca Calvimontes",
+  "homepage": "https://github.com/drkpkg/odoo-backup-desktop",
+  "contributes": {
+    "pages": [{ "id": "main", "title": "Hola", "path": "ui/index.html" }],
+    "menus": [
+      { "id": "sidebar", "location": "sidebar", "label": "Hola", "icon": "sparkles", "page": "main" },
+      { "id": "instance", "location": "instance_actions", "label": "Ver con Hola", "icon": "eye", "window": "detail" }
+    ],
+    "windows": [{ "id": "detail", "title": "Detalle", "path": "ui/detail.html", "width": 720, "height": 520 }],
+    "settings": "settings.schema.json",
+    "destinations": [],
+    "hooks": []
+  },
+  "permissions": { "network": ["api.example.com", "*.example.org"] },
+  "backend": null
+}

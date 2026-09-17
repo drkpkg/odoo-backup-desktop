@@ -1,12 +1,17 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Spinner } from "./components/Spinner";
 import { useToast } from "./components/Toast";
-import { AppLayout, type Page } from "./features/layout/AppLayout";
+import { AppLayout } from "./features/layout/AppLayout";
+import { coreRoute, type Route } from "./features/layout/navigation";
 import { BackupJobsProvider } from "./features/backups/BackupJobsProvider";
 import { HistoryPage } from "./features/history/HistoryPage";
 import { InstancesPage } from "./features/instances/InstancesPage";
+import { MockPluginWindowDialog } from "./features/plugins/MockPluginWindowDialog";
+import { PluginPageView } from "./features/plugins/PluginPageView";
+import { PluginsPage } from "./features/plugins/PluginsPage";
+import { usePluginsChangedListener } from "./features/plugins/usePlugins";
 import { SettingsPage } from "./features/settings/SettingsPage";
 import { VaultGate } from "./features/vault/VaultGate";
 import { errorMessage } from "./lib/errors";
@@ -17,10 +22,23 @@ import type { AppStatus } from "./lib/types";
 export default function App() {
   const queryClient = useQueryClient();
   const toast = useToast();
-  const [page, setPage] = useState<Page>("instances");
+  const [route, setRoute] = useState<Route>(coreRoute("instances"));
   const [historyInstanceId, setHistoryInstanceId] = useState<string | null>(null);
+  const [settingsPluginId, setSettingsPluginId] = useState<string | null>(null);
 
   const status = useQuery({ queryKey: queryKeys.appStatus, queryFn: () => ipc.getAppStatus(), staleTime: Infinity });
+  usePluginsChangedListener();
+
+  const navigate = useCallback((next: Route) => {
+    if (!(next.kind === "core" && next.page === "history")) setHistoryInstanceId(null);
+    if (!(next.kind === "core" && next.page === "settings")) setSettingsPluginId(null);
+    setRoute(next);
+  }, []);
+
+  const openPluginSettings = useCallback((pluginId: string) => {
+    setSettingsPluginId(pluginId);
+    setRoute(coreRoute("settings"));
+  }, []);
 
   // Bloqueo desde el backend (manual o por inactividad): descartar todos los datos en caché.
   useEffect(() => {
@@ -31,7 +49,9 @@ export default function App() {
         queryClient.setQueryData<AppStatus>(queryKeys.appStatus, (prev) =>
           prev ? { ...prev, vault: { ...prev.vault, unlocked: false } } : prev,
         );
-        queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== queryKeys.appStatus[0] });
+        queryClient.removeQueries({
+          predicate: (query) => query.queryKey[0] !== queryKeys.appStatus[0] && query.queryKey[0] !== queryKeys.plugins[0],
+        });
         void queryClient.invalidateQueries({ queryKey: queryKeys.appStatus });
         if (payload.reason === "idle") toast.info("Bóveda bloqueada por inactividad");
       })
@@ -44,6 +64,23 @@ export default function App() {
       unlisten?.();
     };
   }, [queryClient, toast]);
+
+  // Ventanas de plugin que piden abrir los ajustes de su plugin aquí.
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let cancelled = false;
+    void ipc
+      .onOpenPluginSettings(openPluginSettings)
+      .then((fn) => {
+        if (cancelled) fn();
+        else unlisten = fn;
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, [openPluginSettings]);
 
   if (status.isPending) {
     return (
@@ -65,27 +102,40 @@ export default function App() {
   return (
     <VaultGate status={status.data}>
       <BackupJobsProvider>
-        <AppLayout
-          page={page}
-          onNavigate={(next) => {
-            if (next !== "history") setHistoryInstanceId(null);
-            setPage(next);
-          }}
-          status={status.data}
-        >
-          {page === "instances" ? (
+        <AppLayout route={route} onNavigate={navigate} status={status.data}>
+          {route.kind === "core" && route.page === "instances" ? (
             <InstancesPage
+              onNavigate={navigate}
               onShowHistory={(instanceId) => {
                 setHistoryInstanceId(instanceId);
-                setPage("history");
+                setRoute(coreRoute("history"));
               }}
             />
           ) : null}
-          {page === "history" ? (
+          {route.kind === "core" && route.page === "history" ? (
             <HistoryPage instanceId={historyInstanceId} onInstanceChange={setHistoryInstanceId} />
           ) : null}
-          {page === "settings" ? <SettingsPage status={status.data} /> : null}
+          {route.kind === "core" && route.page === "plugins" ? (
+            <PluginsPage onNavigate={navigate} onOpenSettings={openPluginSettings} />
+          ) : null}
+          {route.kind === "core" && route.page === "settings" ? (
+            <SettingsPage status={status.data} focusPluginId={settingsPluginId} />
+          ) : null}
+          {route.kind === "plugin" ? (
+            <PluginPageView
+              key={`${route.pluginId}:${route.pageId}:${JSON.stringify(route.params)}`}
+              pluginId={route.pluginId}
+              pageId={route.pageId}
+              params={route.params}
+              appVersion={status.data.appVersion}
+              onNavigate={navigate}
+              onOpenSettings={openPluginSettings}
+            />
+          ) : null}
         </AppLayout>
+        {ipc.kind === "mock" ? (
+          <MockPluginWindowDialog appVersion={status.data.appVersion} onOpenSettings={openPluginSettings} />
+        ) : null}
       </BackupJobsProvider>
     </VaultGate>
   );

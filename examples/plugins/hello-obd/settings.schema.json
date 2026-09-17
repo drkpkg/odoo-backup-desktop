@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "title": "Ajustes de Hola",
+  "description": "Ejemplo con todos los tipos de campo que admite el esquema de ajustes.",
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "title": "URL",
+      "description": "Dirección del servicio externo.",
+      "format": "url",
+      "default": "https://api.example.com"
+    },
+    "token": {
+      "type": "string",
+      "title": "Token",
+      "description": "Se guarda cifrado en la bóveda; nunca se vuelve a mostrar.",
+      "secret": true,
+      "minLength": 10
+    },
+    "retries": { "type": "integer", "title": "Reintentos", "minimum": 0, "maximum": 10, "default": 3 },
+    "ratio": { "type": "number", "title": "Proporción", "minimum": 0, "maximum": 1, "default": 0.5 },
+    "mode": {
+      "type": "string",
+      "title": "Modo",
+      "enum": ["rapido", "seguro"],
+      "enumLabels": ["Rápido", "Seguro"],
+      "default": "seguro"
+    },
+    "contact": { "type": "string", "title": "Correo de contacto", "format": "email", "placeholder": "ops@example.com" },
+    "tag": {
+      "type": "string",
+      "title": "Etiqueta",
+      "description": "Solo minúsculas, números y guiones.",
+      "pattern": "^[a-z0-9-]*$",
+      "maxLength": 32
+    },
+    "notify": { "type": "boolean", "title": "Notificar", "description": "Mostrar un aviso al abrir la página.", "default": true },
+    "notes": { "type": "string", "title": "Notas", "format": "multiline", "maxLength": 2000 }
+  },
+  "required": ["endpoint"]
+}

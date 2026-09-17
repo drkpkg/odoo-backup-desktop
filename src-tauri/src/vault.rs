@@ -174,7 +174,7 @@ impl VaultManager {
 }
 
 fn migrate(data: &mut VaultData) {
-    // Version 1 is the first format; future migrations go here.
+    // 1 → 2: `plugin_secrets` defaults to empty through serde; nothing to transform.
     data.version = crate::models::VAULT_DATA_VERSION;
 }
 

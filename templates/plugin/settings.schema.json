@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "title": "Ajustes de __PLUGIN_NAME__",
+  "properties": {
+    "greeting": { "type": "string", "title": "Saludo", "default": "Hola", "maxLength": 80 },
+    "enabled": { "type": "boolean", "title": "Activado", "default": true }
+  },
+  "required": []
+}

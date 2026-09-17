@@ -33,6 +33,8 @@ fn test_app(keychain: bool) -> TestApp {
         kdf: Some(KdfParams::insecure_for_tests()),
         disable_logging: true,
         disable_notifications: true,
+        user_plugins_dir: Some(dir.path().join("plugins")),
+        ..AppOptions::default()
     };
     let mut app = app_builder(mock_builder(), options).build(tauri::generate_context!(test = true)).unwrap();
     // A single iteration (not a loop) runs the setup hook and creates the "main" window

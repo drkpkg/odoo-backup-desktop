@@ -5,17 +5,24 @@ Read `docs/architecture.md` first: it holds the IPC contract, vault format and s
 
 ## Layout
 - `crates/obd-vault` encrypted vault · `crates/obd-odoo` Odoo client + backup transports ·
-  `crates/obd-storage` storage adapters (local, Google Drive) + retention
-- `src-tauri/` app state, commands (`commands.rs`), backup runner (`backup.rs`), history (SQLite)
+  `crates/obd-storage` storage adapters (local, Google Drive) + retention ·
+  `crates/obd-plugins` plugin manifest/schema validation, discovery, assets, plugin stores
+- `src-tauri/` app state, commands (`commands.rs`, `plugin_commands.rs`), backup runner (`backup.rs`),
+  plugin manager + `obd-plugin://` protocol (`plugins.rs`), history (SQLite)
 - `src/` React UI; `src/lib/ipc.ts` + `types.ts` mirror the IPC contract; mock backend for `pnpm dev`
+- `plugin-sdk/` JS/CSS/d.ts served to plugins at `/_sdk/`; `examples/plugins/`, `templates/plugin/`,
+  `scripts/new-plugin.sh`. Plugin contract: `docs/plugins.md`.
 - Project skills in `.claude/skills/` (tauri2-desktop, odoo-remote-backup, secure-vault, gdrive-storage,
-  desktop-release, react-ui) — load the relevant one before working in that area.
+  desktop-release, react-ui, plugins) — load the relevant one before working in that area.
 
 ## Rules
 - Secrets never cross IPC or reach logs/URLs. Commands accept secrets as input and return metadata only.
 - Keychain and Argon2id calls are blocking: always `spawn_blocking`.
 - New commands must be added to `src-tauri/build.rs`, `src-tauri/permissions/app-commands.toml`,
-  `generate_handler!` in `src-tauri/src/lib.rs`, the contract in `docs/architecture.md` and `src/lib/ipc.ts`.
+  `generate_handler!` in `src-tauri/src/lib.rs`, the contract in `docs/architecture.md` (or
+  `docs/plugins.md`) and `src/lib/ipc.ts`. Only add them to `allow-plugin-window-commands` if plugin
+  windows really need them.
+- Plugins never get Tauri IPC: their pages run in sandboxed iframes and talk through the bridge.
 - Code, identifiers and comments in English; UI strings in Spanish.
 - Commits and PRs carry no AI attribution.
 

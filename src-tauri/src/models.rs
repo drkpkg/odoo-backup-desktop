@@ -3,6 +3,8 @@
 //! Records (`*Record`, `VaultData`) may hold secrets and never leave Rust.
 //! Views (`*View`, `AppStatus`, `DriveStatus`) are what the webview receives.
 
+use std::collections::BTreeMap;
+
 use chrono::{DateTime, Utc};
 use obd_odoo::{ProbeReport, ProtocolPreference, SecretKind, TransportKind};
 use obd_vault::SecretField;
@@ -10,7 +12,11 @@ use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::history::HistoryEntry;
 
-pub const VAULT_DATA_VERSION: u32 = 1;
+/// 2: adds `pluginSecrets` (absent in version 1 files, defaults to empty).
+pub const VAULT_DATA_VERSION: u32 = 2;
+
+/// Secret settings of one plugin: field name → value.
+pub type PluginSecrets = BTreeMap<String, SecretField>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,11 +26,19 @@ pub struct VaultData {
     pub instances: Vec<InstanceRecord>,
     #[serde(default)]
     pub drive: DriveConfig,
+    /// Plugin id → secret settings. Only the owning plugin's entry is ever used.
+    #[serde(default)]
+    pub plugin_secrets: BTreeMap<String, PluginSecrets>,
 }
 
 impl Default for VaultData {
     fn default() -> Self {
-        Self { version: VAULT_DATA_VERSION, instances: Vec::new(), drive: DriveConfig::default() }
+        Self {
+            version: VAULT_DATA_VERSION,
+            instances: Vec::new(),
+            drive: DriveConfig::default(),
+            plugin_secrets: BTreeMap::new(),
+        }
     }
 }
 

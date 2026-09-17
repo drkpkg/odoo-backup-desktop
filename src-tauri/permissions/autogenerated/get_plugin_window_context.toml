@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-plugin-window-context"
+description = "Enables the get_plugin_window_context command without any pre-configured scope."
+commands.allow = ["get_plugin_window_context"]
+
+[[permission]]
+identifier = "deny-get-plugin-window-context"
+description = "Denies the get_plugin_window_context command without any pre-configured scope."
+commands.deny = ["get_plugin_window_context"]

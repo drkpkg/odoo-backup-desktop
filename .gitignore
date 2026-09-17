@@ -31,3 +31,9 @@ pnpm-debug.log*
 # Local test artifacts
 dev/odoo/.data
 *.zip.part
+
+# Python
+__pycache__/
+
+# TypeScript incremental build info
+*.tsbuildinfo

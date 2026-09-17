@@ -1,0 +1,386 @@
+/* Estilos base para páginas de plugins de Odoo Backup Desktop (API v1).
+   Paleta equivalente a la app; tema por `data-theme` (lo aplica el SDK) o por el sistema. */
+
+:root {
+  color-scheme: light dark;
+  --obd-bg: #f4f5f7;
+  --obd-surface: #ffffff;
+  --obd-surface-2: #f0f2f5;
+  --obd-border: #dfe3e8;
+  --obd-border-strong: #c7cdd5;
+  --obd-text: #17202a;
+  --obd-muted: #5b6776;
+  --obd-subtle: #8a94a1;
+  --obd-accent: #0e6b63;
+  --obd-accent-hover: #0b5a53;
+  --obd-accent-fg: #ffffff;
+  --obd-accent-soft: #dff0ed;
+  --obd-success: #1f7a45;
+  --obd-success-soft: #e1f3e8;
+  --obd-warning: #9a5b00;
+  --obd-warning-soft: #fcf0d8;
+  --obd-danger: #b3261e;
+  --obd-danger-soft: #fbe5e3;
+  --obd-info: #2458a6;
+  --obd-info-soft: #e3ecfa;
+  --obd-focus: #3aa597;
+  --obd-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
+  --obd-radius: 10px;
+  --obd-font: system-ui, -apple-system, "Segoe UI", "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  --obd-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --obd-bg: #0f1216;
+    --obd-surface: #161a20;
+    --obd-surface-2: #1c2129;
+    --obd-border: #262c35;
+    --obd-border-strong: #353d48;
+    --obd-text: #e5e9ee;
+    --obd-muted: #9aa5b3;
+    --obd-subtle: #6f7a88;
+    --obd-accent: #3cb8a8;
+    --obd-accent-hover: #55c8b9;
+    --obd-accent-fg: #06201d;
+    --obd-accent-soft: #10302c;
+    --obd-success: #5cc88b;
+    --obd-success-soft: #13301f;
+    --obd-warning: #e7b05a;
+    --obd-warning-soft: #33260f;
+    --obd-danger: #f08a82;
+    --obd-danger-soft: #3a1714;
+    --obd-info: #85aef0;
+    --obd-info-soft: #16243a;
+    --obd-focus: #55c8b9;
+    --obd-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --obd-bg: #0f1216;
+  --obd-surface: #161a20;
+  --obd-surface-2: #1c2129;
+  --obd-border: #262c35;
+  --obd-border-strong: #353d48;
+  --obd-text: #e5e9ee;
+  --obd-muted: #9aa5b3;
+  --obd-subtle: #6f7a88;
+  --obd-accent: #3cb8a8;
+  --obd-accent-hover: #55c8b9;
+  --obd-accent-fg: #06201d;
+  --obd-accent-soft: #10302c;
+  --obd-success: #5cc88b;
+  --obd-success-soft: #13301f;
+  --obd-warning: #e7b05a;
+  --obd-warning-soft: #33260f;
+  --obd-danger: #f08a82;
+  --obd-danger-soft: #3a1714;
+  --obd-info: #85aef0;
+  --obd-info-soft: #16243a;
+  --obd-focus: #55c8b9;
+  --obd-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--obd-bg);
+  color: var(--obd-text);
+  font-family: var(--obd-font);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 8px;
+}
+
+a {
+  color: var(--obd-accent);
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--obd-mono);
+  font-size: 12px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--obd-focus);
+  outline-offset: 2px;
+}
+
+/* --- Layout -------------------------------------------------------------- */
+
+.obd-page {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.obd-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.obd-between {
+  justify-content: space-between;
+}
+
+.obd-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.obd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.obd-muted {
+  color: var(--obd-muted);
+  font-size: 13px;
+}
+
+.obd-card {
+  background: var(--obd-surface);
+  border: 1px solid var(--obd-border);
+  border-radius: var(--obd-radius);
+  box-shadow: var(--obd-shadow);
+  padding: 16px 18px;
+}
+
+.obd-pre {
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--obd-surface-2);
+  color: var(--obd-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.obd-counter {
+  margin: 8px 0 12px;
+  font-size: 32px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.obd-dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.obd-dl dt {
+  color: var(--obd-muted);
+}
+
+.obd-dl dd {
+  margin: 0;
+  word-break: break-word;
+}
+
+/* --- Botones ------------------------------------------------------------- */
+
+.obd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--obd-border-strong);
+  border-radius: 7px;
+  background: var(--obd-surface);
+  color: var(--obd-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--obd-shadow);
+  transition: background-color 0.12s ease;
+}
+
+.obd-btn:hover {
+  background: var(--obd-surface-2);
+}
+
+.obd-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.obd-btn-primary {
+  border-color: transparent;
+  background: var(--obd-accent);
+  color: var(--obd-accent-fg);
+}
+
+.obd-btn-primary:hover {
+  background: var(--obd-accent-hover);
+}
+
+.obd-btn-danger {
+  border-color: transparent;
+  background: var(--obd-danger);
+  color: #fff;
+}
+
+.obd-btn-danger:hover {
+  background: var(--obd-danger);
+  opacity: 0.9;
+}
+
+.obd-btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+/* --- Formularios --------------------------------------------------------- */
+
+.obd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.obd-field label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.obd-input,
+.obd-select,
+.obd-textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--obd-border-strong);
+  border-radius: 7px;
+  background: var(--obd-surface);
+  color: var(--obd-text);
+  font: inherit;
+}
+
+.obd-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.obd-input:focus,
+.obd-select:focus,
+.obd-textarea:focus {
+  border-color: var(--obd-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--obd-accent) 25%, transparent);
+}
+
+/* --- Tablas -------------------------------------------------------------- */
+
+.obd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.obd-table th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--obd-border);
+  color: var(--obd-muted);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.obd-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--obd-border);
+  vertical-align: middle;
+}
+
+.obd-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* --- Badges -------------------------------------------------------------- */
+
+.obd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: var(--obd-surface-2);
+  color: var(--obd-muted);
+}
+
+.obd-badge-neutral {
+  background: var(--obd-surface-2);
+  color: var(--obd-muted);
+}
+
+.obd-badge-accent {
+  background: var(--obd-accent-soft);
+  color: var(--obd-accent);
+}
+
+.obd-badge-success {
+  background: var(--obd-success-soft);
+  color: var(--obd-success);
+}
+
+.obd-badge-warning {
+  background: var(--obd-warning-soft);
+  color: var(--obd-warning);
+}
+
+.obd-badge-danger {
+  background: var(--obd-danger-soft);
+  color: var(--obd-danger);
+}
+
+.obd-badge-info {
+  background: var(--obd-info-soft);
+  color: var(--obd-info);
+}

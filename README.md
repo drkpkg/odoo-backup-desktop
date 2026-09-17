@@ -40,6 +40,17 @@ Crea un cliente OAuth de tipo **Aplicación de escritorio** en Google Cloud con 
 *Testing* los tokens caducan a los 7 días). Configura el Client ID/Secret en *Ajustes → Google Drive*
 o embébelos al compilar con `OBD_GDRIVE_CLIENT_ID` y `OBD_GDRIVE_CLIENT_SECRET`.
 
+## Plugins
+
+Agrega páginas, menús, ventanas y ajustes copiando una carpeta en `<datos de la app>/plugins/` o
+cargándola en *Plugins → Modo desarrollador*. Contrato y SDK: [docs/plugins.md](docs/plugins.md).
+
+```bash
+scripts/new-plugin.sh mi-plugin "Mi plugin"   # crea ./plugins/mi-plugin desde la plantilla
+```
+
+Ejemplo completo: `examples/plugins/hello-obd`.
+
 ## Distribución
 
 Los workflows de `.github/workflows/` generan los paquetes al crear un tag `v*`.

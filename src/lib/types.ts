@@ -190,6 +190,112 @@ export type DriveStatus = {
   displayName: string | null;
 };
 
+// --- Plugins (docs/plugins.md) ---------------------------------------------
+
+export type PluginSource = "builtin" | "user" | "dev";
+export type PluginStatus = "enabled" | "disabled" | "error" | "shadowed";
+
+export type PluginIssue = {
+  severity: "error" | "warning";
+  code: string;
+  message: string;
+  field: string | null;
+};
+
+export type PluginMenuLocation = "sidebar" | "instance_actions";
+
+export type PluginPage = { id: string; title: string; path: string };
+
+export type PluginMenu = {
+  id: string;
+  location: PluginMenuLocation;
+  label: string;
+  icon: string | null;
+  page: string | null;
+  window: string | null;
+};
+
+export type PluginWindow = {
+  id: string;
+  title: string;
+  path: string;
+  width: number | null;
+  height: number | null;
+};
+
+export type PluginView = {
+  /** Si el manifiesto no se pudo leer: nombre de la carpeta. */
+  id: string;
+  name: string;
+  version: string | null;
+  description: string | null;
+  author: string | null;
+  homepage: string | null;
+  source: PluginSource;
+  path: string;
+  status: PluginStatus;
+  issues: PluginIssue[];
+  /** Termina en "/". */
+  baseUrl: string;
+  /** Cambia en cada recarga (para refrescar iframes). */
+  revision: number;
+  pages: PluginPage[];
+  menus: PluginMenu[];
+  windows: PluginWindow[];
+  hasSettings: boolean;
+  destinations: { id: string; label: string }[];
+  hooks: string[];
+  permissions: { network: string[] };
+  hasBackend: boolean;
+};
+
+export type PluginConfig = {
+  developerMode: boolean;
+  devPluginPaths: string[];
+  userPluginsDir: string;
+};
+
+export type SchemaProperty = {
+  type: "string" | "number" | "integer" | "boolean";
+  title?: string;
+  description?: string;
+  default?: unknown;
+  enum?: (string | number)[];
+  enumLabels?: string[];
+  minimum?: number;
+  maximum?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  format?: "url" | "email" | "password" | "multiline";
+  placeholder?: string;
+  secret?: boolean;
+};
+
+export type SettingsSchema = {
+  type: "object";
+  title?: string | null;
+  description?: string | null;
+  properties: Record<string, SchemaProperty>;
+  propertyOrder: string[];
+  required: string[];
+};
+
+export type PluginSettings = {
+  schema: SettingsSchema;
+  values: Record<string, unknown>;
+  secretsSet: string[];
+};
+
+export type PluginsChangedPayload = { reason: "reload" | "watch" | "config" };
+
+/** Resultado de `get_plugin_window_context` para la ventana que lo invoca. */
+export type PluginWindowContext = {
+  pluginId: string;
+  windowId: string;
+  params: Record<string, unknown>;
+};
+
 // --- Errores ---------------------------------------------------------------
 
 /** Forma de error de todos los comandos. */

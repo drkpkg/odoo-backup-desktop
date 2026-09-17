@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hola OBD</title>
+    <link rel="stylesheet" href="../../_sdk/obd-plugin.css" />
+    <script type="module" src="./index.js"></script>
+  </head>
+  <body class="obd-page">
+    <header class="obd-row obd-between">
+      <div>
+        <h1>Hola desde un plugin</h1>
+        <p class="obd-muted" id="context">Conectando con la app…</p>
+      </div>
+      <div class="obd-row">
+        <button type="button" class="obd-btn" id="open-settings">Ajustes</button>
+        <button type="button" class="obd-btn obd-btn-primary" id="open-window" disabled>Abrir ventana</button>
+      </div>
+    </header>
+
+    <section class="obd-grid">
+      <article class="obd-card">
+        <h2>Contador guardado</h2>
+        <p class="obd-muted">Usa <code>obd.storage</code>: se conserva entre sesiones.</p>
+        <p class="obd-counter" id="counter">…</p>
+        <div class="obd-row">
+          <button type="button" class="obd-btn obd-btn-primary" id="increment">Sumar 1</button>
+          <button type="button" class="obd-btn" id="reset">Reiniciar</button>
+        </div>
+      </article>
+
+      <article class="obd-card">
+        <h2>Avisos</h2>
+        <p class="obd-muted">Muestra notificaciones de la app con <code>obd.ui.toast</code>.</p>
+        <div class="obd-row">
+          <button type="button" class="obd-btn" data-toast="info">Info</button>
+          <button type="button" class="obd-btn" data-toast="success">Éxito</button>
+          <button type="button" class="obd-btn obd-btn-danger" data-toast="error">Error</button>
+        </div>
+      </article>
+
+      <article class="obd-card">
+        <h2>Ajustes actuales</h2>
+        <p class="obd-muted">Leídos con <code>obd.settings.get()</code> (los secretos no se exponen).</p>
+        <pre class="obd-pre" id="settings">…</pre>
+      </article>
+    </section>
+
+    <section class="obd-card">
+      <h2>Instancias</h2>
+      <table class="obd-table">
+        <thead>
+          <tr>
+            <th>Instancia</th>
+            <th>Versión</th>
+            <th>Último backup</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="instances">
+          <tr>
+            <td colspan="4" class="obd-muted">Cargando…</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </body>
+</html>

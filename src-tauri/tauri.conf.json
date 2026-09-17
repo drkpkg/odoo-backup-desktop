@@ -32,14 +32,20 @@
         "object-src": "'none'",
         "base-uri": "'none'",
         "frame-ancestors": "'none'",
-        "form-action": "'none'"
+        "form-action": "'none'",
+        "frame-src": "obd-plugin: http://obd-plugin.localhost"
       },
       "freezePrototype": true
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["deb", "rpm", "appimage", "nsis"],
+    "targets": [
+      "deb",
+      "rpm",
+      "appimage",
+      "nsis"
+    ],
     "category": "Utility",
     "shortDescription": "Backups de instancias Odoo",
     "longDescription": "Odoo Backup Desktop descarga backups .zip de instancias Odoo 15 a 19, guarda las credenciales cifradas y sube los backups a Google Drive.",
@@ -74,7 +80,10 @@
       },
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["Spanish", "English"],
+        "languages": [
+          "Spanish",
+          "English"
+        ],
         "displayLanguageSelector": false
       }
     }

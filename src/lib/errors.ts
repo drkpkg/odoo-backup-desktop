@@ -82,6 +82,23 @@ export const ERROR_MESSAGES: Record<string, string> = {
   browser_open_failed: "No se pudo abrir el navegador para autorizar Google Drive.",
   history_db: "No se pudo leer o guardar el historial de backups.",
   interrupted: "La aplicación se cerró mientras se hacía el backup.",
+
+  // Plugins (docs/plugins.md)
+  plugin_not_found: "No se encontró el plugin.",
+  plugin_disabled: "El plugin está desactivado.",
+  plugin_invalid: "El plugin tiene errores y no se puede cargar.",
+  plugin_no_settings: "Este plugin no tiene ajustes.",
+  plugin_window_not_found: "El plugin no declara esa ventana.",
+  plugin_storage_limit: "El plugin superó el límite de almacenamiento (1 MiB).",
+  plugin_storage_key_invalid: "Clave de almacenamiento inválida (solo letras, números, «.», «_» y «-», hasta 128).",
+  plugin_path_invalid: "La ruta del plugin no es válida.",
+  plugin_settings_invalid: "Hay ajustes del plugin con valores inválidos.",
+  plugin_store_corrupted: "No se pudieron leer los datos guardados del plugin.",
+  bridge_invalid_request: "El plugin envió una petición inválida.",
+  bridge_unknown_method: "El plugin llamó a una función que no existe.",
+  bridge_timeout: "La aplicación no respondió a tiempo al plugin.",
+  unsupported_surface: "Esta acción no está disponible desde una ventana de plugin.",
+
   internal: "Error interno de la aplicación.",
 };
 

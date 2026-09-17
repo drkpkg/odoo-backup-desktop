@@ -43,6 +43,7 @@ pub struct AppState {
     pub jobs: JobRegistry,
     pub limiter: Limiter,
     pub http: reqwest::Client,
+    pub plugins: std::sync::Arc<crate::plugins::PluginManager>,
     /// Pending Google authorization: (attempt id, cancel token).
     pub drive_connect: Mutex<Option<(String, CancellationToken)>>,
 }

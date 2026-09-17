@@ -1,0 +1,23 @@
+[package]
+name = "obd-plugins"
+description = "Plugin discovery, manifest validation, settings schemas and plugin storage for Odoo Backup Desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+indexmap = { version = "2.14", features = ["serde"] }
+percent-encoding = "2.3"
+regex = "1.13"
+semver = "1.0"
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

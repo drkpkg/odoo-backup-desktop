@@ -24,6 +24,9 @@ import { queryKeys } from "../../lib/query";
 import type { InstanceView, ProbeReport } from "../../lib/types";
 import { useBackupJobs } from "../backups/BackupJobsProvider";
 import { describeJob } from "../backups/jobs";
+import { pluginMenus, type PluginMenuEntry, type Route } from "../layout/navigation";
+import { InstanceActionsMenu } from "../plugins/InstanceActionsMenu";
+import { useOpenPluginMenu, usePlugins } from "../plugins/usePlugins";
 import { STATUS_TONES } from "../history/tones";
 import { InstanceFormDialog } from "./InstanceFormDialog";
 import { ProbeReportView } from "./ProbeReportView";
@@ -31,11 +34,20 @@ import { probeRequestForInstance } from "./schema";
 
 type ProbeState = { instance: InstanceView; report: ProbeReport | null; error: string | null };
 
-export function InstancesPage({ onShowHistory }: { onShowHistory: (instanceId: string) => void }) {
+export function InstancesPage({
+  onShowHistory,
+  onNavigate,
+}: {
+  onShowHistory: (instanceId: string) => void;
+  onNavigate: (route: Route) => void;
+}) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const jobs = useBackupJobs();
   const instances = useQuery({ queryKey: queryKeys.instances, queryFn: () => ipc.listInstances() });
+  const plugins = usePlugins();
+  const pluginActions = pluginMenus(plugins.data, "instance_actions");
+  const openPluginMenu = useOpenPluginMenu(onNavigate);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<InstanceView | null>(null);
@@ -134,6 +146,8 @@ export function InstancesPage({ onShowHistory }: { onShowHistory: (instanceId: s
                     onEdit={() => openEdit(instance)}
                     onDelete={() => setDeleting(instance)}
                     onHistory={() => onShowHistory(instance.id)}
+                    pluginActions={pluginActions}
+                    onPluginAction={(entry) => void openPluginMenu(entry, instance)}
                   />
                 ))}
               </tbody>
@@ -196,6 +210,8 @@ function InstanceRow({
   onEdit,
   onDelete,
   onHistory,
+  pluginActions,
+  onPluginAction,
 }: {
   instance: InstanceView;
   starting: boolean;
@@ -204,6 +220,8 @@ function InstanceRow({
   onEdit: () => void;
   onDelete: () => void;
   onHistory: () => void;
+  pluginActions: PluginMenuEntry[];
+  onPluginAction: (entry: PluginMenuEntry) => void;
 }) {
   const { runningFor } = useBackupJobs();
   const job = runningFor(instance.id);
@@ -286,6 +304,7 @@ function InstanceRow({
           <IconButton label="Ver historial" icon={<History size={15} />} onClick={onHistory} />
           <IconButton label="Editar" icon={<Pencil size={15} />} onClick={onEdit} />
           <IconButton label="Eliminar" tone="danger" icon={<Trash2 size={15} />} onClick={onDelete} disabled={Boolean(job)} />
+          <InstanceActionsMenu instance={instance} entries={pluginActions} onSelect={(entry) => onPluginAction(entry)} />
         </div>
       </td>
     </tr>

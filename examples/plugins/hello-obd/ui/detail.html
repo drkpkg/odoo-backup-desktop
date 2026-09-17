@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detalle · Hola OBD</title>
+    <link rel="stylesheet" href="../../_sdk/obd-plugin.css" />
+    <script type="module" src="./detail.js"></script>
+  </head>
+  <body class="obd-page">
+    <h1 id="title">Detalle</h1>
+    <p class="obd-muted" id="subtitle">Cargando…</p>
+    <section class="obd-card" id="details" hidden>
+      <dl class="obd-dl" id="fields"></dl>
+    </section>
+    <section class="obd-card">
+      <h2>Historial reciente</h2>
+      <table class="obd-table">
+        <thead>
+          <tr>
+            <th>Inicio</th>
+            <th>Estado</th>
+            <th>Tamaño</th>
+          </tr>
+        </thead>
+        <tbody id="history">
+          <tr>
+            <td colspan="3" class="obd-muted">Elige una instancia desde «Más acciones → Ver con Hola».</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <div class="obd-row">
+      <button type="button" class="obd-btn" id="settings">Ajustes del plugin</button>
+    </div>
+  </body>
+</html>

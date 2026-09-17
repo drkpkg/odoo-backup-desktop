@@ -21,6 +21,20 @@ const COMMANDS: &[&str] = &[
     "connect_drive",
     "cancel_drive_connect",
     "disconnect_drive",
+    "list_plugins",
+    "reload_plugins",
+    "set_plugin_enabled",
+    "get_plugin_config",
+    "set_developer_mode",
+    "add_dev_plugin",
+    "remove_dev_plugin",
+    "open_plugins_folder",
+    "get_plugin_settings",
+    "save_plugin_settings",
+    "plugin_storage_get",
+    "plugin_storage_set",
+    "open_plugin_window",
+    "get_plugin_window_context",
 ];
 
 fn main() {

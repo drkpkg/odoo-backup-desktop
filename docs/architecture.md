@@ -281,6 +281,24 @@ Además de los códigos de cada crate (`VaultError::code`, `OdooError::code`, `S
 `browser_open_failed`, `file_missing`, `history_db`, `internal`. En el historial, `interrupted` marca
 backups que quedaron a medias porque la app se cerró.
 
+## Plugins
+
+Extensiones "copiar la carpeta y listo": páginas, menús, ventanas, ajustes y almacenamiento propio.
+Contrato completo en [`plugins.md`](plugins.md).
+
+```
+<recursos>/plugins/<id>  (builtin)   <datos>/plugins/<id>  (user)   carpetas de desarrollo (dev)
+        └──────────── obd-plugins::discover ────────────┘
+                              │
+                 PluginManager (src-tauri/src/plugins.rs)
+       ├─ protocolo obd-plugin://localhost/<id>/…  (+ /_sdk/obd-plugin.js|css|d.ts)
+       ├─ plugins.json · plugin-settings.json · plugin-data/<id>.json   (no secretos)
+       ├─ secretos de ajustes → bóveda (`pluginSecrets[<id>]`)
+       └─ vigilante de carpetas en modo desarrollador → evento `plugins-changed`
+                              │
+  UI: <iframe sandbox> + puente postMessage  ·  ventanas `plugin--<id>--<ventana>` con capability propia
+```
+
 ## Pruebas
 
 | Suite | Comando | Qué cubre |
@@ -289,7 +307,9 @@ backups que quedaron a medias porque la app se cerró.
 | Contrato IPC | `cargo test -p odoo-backup-desktop --test ipc` | Comandos reales vía runtime simulado de Tauri, `tauri.conf.json` y capabilities reales, secretos nunca expuestos |
 | Odoo real (Docker) | `dev/odoo/run-integration.sh` | Cliente Odoo contra 15/17/19 (con y sin `list_db`) |
 | App ↔ Odoo real | `IT_COMMAND='cargo test -p odoo-backup-desktop --test ipc -- --ignored' dev/odoo/run-integration.sh` | Backup completo por comandos IPC, retención local |
-| Frontend | `pnpm test`, `pnpm typecheck`, `pnpm build` | Utilidades, mapeo de errores, formularios, mock |
+| Plugins (IPC) | `cargo test -p odoo-backup-desktop --test plugins` | Descubrimiento, ajustes con secretos, storage, modo desarrollador, ventanas y su capability, ejemplo y plantilla válidos |
+| Plugins (app real) | `dev/e2e/run-plugins-e2e.sh` | WebKitGTK vía WebDriver: iframe aislado sin IPC, puente, storage, ventana de plugin |
+| Frontend | `pnpm test`, `pnpm typecheck`, `pnpm build` | Utilidades, mapeo de errores, formularios, puente, SDK, mock |
 
 ## Archivos de la app
 

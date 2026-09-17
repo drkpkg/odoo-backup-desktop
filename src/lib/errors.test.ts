@@ -50,6 +50,11 @@ describe("messages", () => {
       // obd-storage
       "storage_not_configured", "storage_auth_expired", "storage_authorization_denied", "storage_quota_exceeded",
       "storage_rate_limited", "storage_not_found", "storage_transient", "storage_fatal",
+      // obd-plugins + plugin commands + bridge (docs/plugins.md)
+      "plugin_not_found", "plugin_disabled", "plugin_invalid", "plugin_no_settings", "plugin_window_not_found",
+      "plugin_storage_limit", "plugin_storage_key_invalid", "plugin_path_invalid", "plugin_settings_invalid",
+      "plugin_store_corrupted", "bridge_invalid_request", "bridge_unknown_method", "bridge_timeout",
+      "unsupported_surface",
     ];
     const missing = rustCodes.filter((code) => !(code in ERROR_MESSAGES));
     expect(missing).toEqual([]);

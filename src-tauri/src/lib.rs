@@ -7,6 +7,8 @@ mod error;
 mod history;
 mod jobs;
 mod models;
+mod plugin_commands;
+mod plugins;
 mod settings;
 mod state;
 mod vault;
@@ -46,6 +48,10 @@ pub struct AppOptions {
     pub disable_logging: bool,
     /// Skips desktop notifications.
     pub disable_notifications: bool,
+    /// Replaces `<resources>/plugins` (built-in plugins).
+    pub builtin_plugins_dir: Option<PathBuf>,
+    /// Replaces `<data>/plugins` (user plugins).
+    pub user_plugins_dir: Option<PathBuf>,
 }
 
 pub fn run() {
@@ -70,6 +76,22 @@ pub fn app_builder<R: Runtime>(builder: tauri::Builder<R>, options: AppOptions) 
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        // Plugin pages and the plugin SDK (`obd-plugin://localhost/<id>/...`).
+        .register_asynchronous_uri_scheme_protocol(obd_plugins::PROTOCOL_SCHEME, |ctx, request, responder| {
+            let app = ctx.app_handle().clone();
+            let path = request.uri().path().to_owned();
+            tauri::async_runtime::spawn_blocking(move || {
+                let response = match app.try_state::<AppState>() {
+                    Some(state) => state.plugins.respond(&path),
+                    None => {
+                        let mut response = tauri::http::Response::new(Vec::new());
+                        *response.status_mut() = tauri::http::StatusCode::SERVICE_UNAVAILABLE;
+                        response
+                    }
+                };
+                responder.respond(response);
+            });
+        })
         .setup(move |app| {
             let options = options.lock().ok().and_then(|mut o| o.take()).unwrap_or_default();
             setup(app.handle(), options)?;
@@ -98,6 +120,20 @@ pub fn app_builder<R: Runtime>(builder: tauri::Builder<R>, options: AppOptions) 
             commands::connect_drive,
             commands::cancel_drive_connect,
             commands::disconnect_drive,
+            plugin_commands::list_plugins,
+            plugin_commands::reload_plugins,
+            plugin_commands::set_plugin_enabled,
+            plugin_commands::get_plugin_config,
+            plugin_commands::set_developer_mode,
+            plugin_commands::add_dev_plugin,
+            plugin_commands::remove_dev_plugin,
+            plugin_commands::open_plugins_folder,
+            plugin_commands::get_plugin_settings,
+            plugin_commands::save_plugin_settings,
+            plugin_commands::plugin_storage_get,
+            plugin_commands::plugin_storage_set,
+            plugin_commands::open_plugin_window,
+            plugin_commands::get_plugin_window_context,
         ])
 }
 
@@ -141,7 +177,14 @@ fn setup<R: Runtime>(app: &AppHandle<R>, options: AppOptions) -> Result<(), Box<
         None => VaultManager::new(vault_file, keystore),
     };
 
+    let builtin_plugins_dir =
+        options.builtin_plugins_dir.or_else(|| app.path().resource_dir().ok().map(|dir| dir.join("plugins")));
+    let user_plugins_dir = options.user_plugins_dir.unwrap_or_else(|| paths.data_dir.join("plugins"));
+    let plugins = plugins::PluginManager::new(builtin_plugins_dir, user_plugins_dir, &paths.data_dir);
+    plugin_commands::sync_watcher(app, &plugins);
+
     let state = AppState {
+        plugins,
         http: state::build_http_client(&app_version),
         app_version,
         notifications: !options.disable_notifications,

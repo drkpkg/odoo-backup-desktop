@@ -1,5 +1,6 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { emitTo, listen } from "@tauri-apps/api/event";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { open } from "@tauri-apps/plugin-dialog";
 
 import type { Backend } from "./backend";
@@ -12,10 +13,18 @@ import type {
   DriveStatus,
   HistoryEntry,
   InstanceView,
+  PluginConfig,
+  PluginSettings,
+  PluginsChangedPayload,
+  PluginView,
+  PluginWindowContext,
   ProbeReport,
   Settings,
   VaultLockedPayload,
 } from "./types";
+
+/** Evento que una ventana de plugin envía a la principal para abrir los ajustes del plugin. */
+export const OPEN_PLUGIN_SETTINGS_EVENT = "plugin-open-settings";
 
 /** Invoca un comando y normaliza el rechazo a `AppError`. */
 async function call<T>(command: string, args?: Record<string, unknown>): Promise<T> {
@@ -61,6 +70,36 @@ export function createTauriBackend(): Backend {
     connectDrive: () => call<DriveStatus>("connect_drive"),
     cancelDriveConnect: () => call<void>("cancel_drive_connect"),
     disconnectDrive: () => call<DriveStatus>("disconnect_drive"),
+
+    listPlugins: () => call<PluginView[]>("list_plugins"),
+    reloadPlugins: () => call<PluginView[]>("reload_plugins"),
+    setPluginEnabled: (pluginId, enabled) => call<PluginView[]>("set_plugin_enabled", { pluginId, enabled }),
+    getPluginConfig: () => call<PluginConfig>("get_plugin_config"),
+    setDeveloperMode: (enabled) => call<PluginConfig>("set_developer_mode", { enabled }),
+    addDevPlugin: (path) => call<PluginConfig>("add_dev_plugin", { path }),
+    removeDevPlugin: (path) => call<PluginConfig>("remove_dev_plugin", { path }),
+    openPluginsFolder: () => call<void>("open_plugins_folder"),
+    getPluginSettings: (pluginId) => call<PluginSettings>("get_plugin_settings", { pluginId }),
+    savePluginSettings: (pluginId, values) => call<PluginSettings>("save_plugin_settings", { pluginId, values }),
+    pluginStorageGet: (pluginId, key) => call<unknown>("plugin_storage_get", { pluginId, key }),
+    pluginStorageSet: (pluginId, key, value) => call<void>("plugin_storage_set", { pluginId, key, value }),
+    openPluginWindow: (pluginId, windowId, params) =>
+      call<void>("open_plugin_window", params ? { pluginId, windowId, params } : { pluginId, windowId }),
+    getPluginWindowContext: () => call<PluginWindowContext>("get_plugin_window_context"),
+    onPluginsChanged: (handler) =>
+      listen<PluginsChangedPayload>("plugins-changed", (event) => handler(event.payload)),
+    requestOpenPluginSettings: async (pluginId) => {
+      try {
+        await emitTo("main", OPEN_PLUGIN_SETTINGS_EVENT, { pluginId });
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onOpenPluginSettings: (handler) =>
+      listen<{ pluginId: string }>(OPEN_PLUGIN_SETTINGS_EVENT, (event) => {
+        if (typeof event.payload?.pluginId === "string") handler(event.payload.pluginId);
+      }),
+    windowLabel: () => getCurrentWebviewWindow().label,
 
     pickDirectory: async (defaultPath) => {
       try {
