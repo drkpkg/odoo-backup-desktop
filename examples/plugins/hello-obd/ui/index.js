@@ -32,17 +32,18 @@ async function renderInstances() {
   const instances = await obd.instances.list();
   const body = $("#instances");
   body.replaceChildren();
-  if (instances.length === 0) {
-    const row = body.insertRow();
-    const cell = row.insertCell();
-    cell.colSpan = 4;
-    cell.className = "obd-muted";
-    cell.textContent = "No hay instancias registradas.";
-    return;
-  }
+  $("#instances-loading").hidden = true;
+  $("#instances-empty").hidden = instances.length > 0;
+  $("#instances-table").hidden = instances.length === 0;
+  // `data-label` da el título de cada celda cuando `.obd-table-stack` apila la tabla.
+  const cell = (row, label) => {
+    const td = row.insertCell();
+    td.dataset.label = label;
+    return td;
+  };
   for (const instance of instances) {
     const row = body.insertRow();
-    const name = row.insertCell();
+    const name = cell(row, "");
     const strong = document.createElement("strong");
     strong.textContent = instance.name;
     const url = document.createElement("div");
@@ -50,9 +51,9 @@ async function renderInstances() {
     url.textContent = `${instance.url} · ${instance.database}`;
     name.append(strong, url);
 
-    row.insertCell().textContent = instance.odooVersion ?? "Sin probar";
+    cell(row, "Versión").textContent = instance.odooVersion ?? "Sin probar";
 
-    const last = row.insertCell();
+    const last = cell(row, "Último respaldo");
     if (instance.lastBackup) {
       const badge = document.createElement("span");
       badge.className = `obd-badge obd-badge-${STATUS_TONES[instance.lastBackup.status] ?? "neutral"}`;
@@ -66,7 +67,7 @@ async function renderInstances() {
       last.className = "obd-muted";
     }
 
-    const actions = row.insertCell();
+    const actions = cell(row, "");
     const button = document.createElement("button");
     button.type = "button";
     button.className = "obd-btn obd-btn-sm";

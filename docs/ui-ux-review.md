@@ -2,7 +2,7 @@
 
 > Informe generado con Codex (2026-09-16) a partir de 32 capturas (mock claro/oscuro, 900×600 y app real en WebKitGTK) y del código. Referencias `archivo:línea` verificadas al commit `1162f6c`.
 >
-> **Estado:** lotes 1 (tablas operables), 2 (flujo de instancia), 3 (progreso unificado) y 4 (primeros pasos y navegación de Ajustes) implementados. Decisión: la UI usa «respaldo» en lugar de «backup».
+> **Estado:** los 5 lotes están implementados (tablas operables, flujo de instancia, progreso unificado, primeros pasos y navegación de Ajustes, plugins y sistema visual). Decisión de fase B: «Backend no disponible en esta versión». Decisión: la UI usa «respaldo» en lugar de «backup».
 
 ## Resumen
 

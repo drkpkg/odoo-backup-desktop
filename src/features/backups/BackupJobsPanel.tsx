@@ -50,7 +50,7 @@ export function BackupJobsPanel() {
   return (
     <section
       aria-label="Respaldos"
-      className="fixed right-4 bottom-4 z-40 flex max-h-[min(70vh,32rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-overlay"
+      className="fixed right-4 bottom-4 z-40 flex max-h-[min(70vh,32rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-overlay border border-border bg-surface shadow-overlay"
     >
       <button
         type="button"

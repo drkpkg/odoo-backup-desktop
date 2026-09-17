@@ -161,7 +161,7 @@ export function InstancesPage({
         }
       />
 
-      <div className="px-6 py-5">
+      <div className="px-page py-section">
         {instances.isPending ? <Spinner label="Cargando instancias…" /> : null}
         {instances.isError ? <Alert tone="danger">{errorMessage(instances.error)}</Alert> : null}
 
@@ -181,7 +181,7 @@ export function InstancesPage({
         {list.length > 0 ? (
           // `table-fixed` + anchos por columna: sin scroll horizontal desde 900×600. El detalle técnico
           // de la conexión solo aparece cuando el contenedor es ancho (container query).
-          <div className="@container overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+          <div className="@container overflow-hidden rounded-card border border-border bg-surface shadow-card">
             <table className="w-full table-fixed text-left text-[13px]">
               <colgroup>
                 <col />

@@ -13,8 +13,8 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  sm: "h-7 px-2.5 text-[13px] gap-1.5",
-  md: "h-9 px-3.5 text-sm gap-2",
+  sm: "h-control-sm px-2.5 text-[13px] gap-1.5",
+  md: "h-control px-3.5 text-sm gap-2",
 };
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

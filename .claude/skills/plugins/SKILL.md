@@ -45,7 +45,14 @@ scripts/new-plugin.sh my-plugin "Mi plugin" ~/dev/my-plugin
 ```
 
 - Pages import the SDK relatively: `import obd from "../../_sdk/obd-plugin.js"` (page lives at
-  `<base>/<id>/ui/…`). Styles: `../../_sdk/obd-plugin.css` (`.obd-btn`, `.obd-card`, `.obd-table`…).
+  `<base>/<id>/ui/…`). Styles: `../../_sdk/obd-plugin.css` (`.obd-btn`, `.obd-card`, `.obd-table`…),
+  tokens `--obd-*` and patterns (`.obd-page-header`, `.obd-empty`, `.obd-banner-*`,
+  `.obd-table-wrap` + `.obd-table-stack` with `data-label`, `.obd-loading`/`.obd-spinner`); see
+  `plugin-sdk/README.md`. The SDK palette and density must match `src/styles.css`
+  (`src/styles.test.ts` checks it; SDK tokens are px because plugin pages set `html` to 14 px).
+- Plugins with `backend`/`destinations`/`hooks` are shown with a neutral "Backend no disponible en
+  esta versión" badge (never "próximamente"); plugin issue codes get Spanish text in
+  `src/features/plugins/issues.ts` — add new codes there too.
 - No `localStorage` (opaque origin): use `obd.storage.get/set` (1 MiB per plugin).
 - Params (e.g. `instanceId` from `instance_actions`) arrive in `await obd.context()`.
 - Icons: kebab-case lucide names from the curated map in `src/features/plugins/icons.ts`, else `puzzle`.

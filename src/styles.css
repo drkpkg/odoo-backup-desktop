@@ -11,8 +11,9 @@
   --app-border: #dfe3e8;
   --app-border-strong: #c7cdd5;
   --app-text: #17202a;
-  --app-muted: #5b6776;
-  --app-subtle: #8a94a1;
+  /* Texto secundario y terciario: ≥ 4.5:1 (WCAG AA) sobre todos los fondos; ver styles.test.ts. */
+  --app-muted: #4f5a68;
+  --app-subtle: #626d7c;
 
   --app-accent: #0e6b63;
   --app-accent-hover: #0b5a53;
@@ -31,6 +32,16 @@
   --app-focus: #3aa597;
   --app-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
   --app-shadow-lg: 0 12px 32px rgb(16 24 40 / 0.18);
+
+  /* Densidad y forma (iguales en claro y oscuro). */
+  --app-space-page: 1.5rem;
+  --app-space-section: 1.25rem;
+  --app-control-height: 2.25rem;
+  --app-control-height-sm: 1.75rem;
+  --app-sidebar-width: 13rem;
+  --app-radius-card: 0.75rem;
+  /* Superficies flotantes (diálogos, panel de respaldos, menús, toasts). */
+  --app-radius-overlay: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,7 +54,7 @@
     --app-border-strong: #353d48;
     --app-text: #e5e9ee;
     --app-muted: #9aa5b3;
-    --app-subtle: #6f7a88;
+    --app-subtle: #7e8997;
 
     --app-accent: #3cb8a8;
     --app-accent-hover: #55c8b9;
@@ -94,6 +105,14 @@
 
   --shadow-card: var(--app-shadow);
   --shadow-overlay: var(--app-shadow-lg);
+
+  --spacing-page: var(--app-space-page);
+  --spacing-section: var(--app-space-section);
+  --spacing-control: var(--app-control-height);
+  --spacing-control-sm: var(--app-control-height-sm);
+  --spacing-sidebar: var(--app-sidebar-width);
+  --radius-card: var(--app-radius-card);
+  --radius-overlay: var(--app-radius-overlay);
 }
 
 @layer base {

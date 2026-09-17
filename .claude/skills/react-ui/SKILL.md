@@ -30,6 +30,10 @@ The UI is a thin client over the Rust commands documented in `docs/architecture.
 - Settings sections are anchors (`settingsAnchor`, `SettingsFocus` in `src/features/settings/sections.tsx`);
   open a section from elsewhere with `onOpenSettings(section)`. Editable blocks call
   `useReportDirty(section, key, dirty)` so the nav and the card show "Cambios sin guardar".
+- Design tokens live in `src/styles.css`: use `px-page`/`py-section`, `h-control`/`h-control-sm`,
+  `rounded-card` (cards, tables), `rounded-overlay` + `shadow-overlay` (dialogs, menus, toasts, the
+  backup panel) and `w-sidebar` instead of raw `px-6`, `h-9`, `rounded-xl`. Text colors must keep
+  ≥ 4.5:1 on every background (`src/styles.test.ts`); tabs use `src/components/Tabs.tsx`.
 - Verify layout changes with the headless Chromium checks at 1180×780 and 900×600, light and dark.
 
 ## Stack

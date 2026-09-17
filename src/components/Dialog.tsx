@@ -74,7 +74,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
       onMouseDown={(event) => {
         if (dismissible && event.target === ref.current) onClose();
       }}
-      className={`m-auto max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] ${WIDTHS[size]} overflow-hidden rounded-xl border border-border bg-surface p-0 text-fg shadow-overlay`}
+      className={`m-auto max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] ${WIDTHS[size]} overflow-hidden rounded-overlay border border-border bg-surface p-0 text-fg shadow-overlay`}
     >
       {open ? (
         <div className="flex max-h-[calc(100vh-2rem)] flex-col">

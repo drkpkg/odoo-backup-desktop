@@ -80,7 +80,7 @@ function SettingsContent({ status, focus }: { status: AppStatus; focus: Settings
     <>
       <PageHeader title="Ajustes" description="Carpeta de descarga, retención, seguridad de la bóveda, Google Drive y plugins." />
       {loaded ? <SectionNav sections={sections} requested={requested} pinned={pinned} onRequest={request} /> : null}
-      <div ref={contentRef} className="mx-auto max-w-3xl space-y-5 px-6 py-5">
+      <div ref={contentRef} className="mx-auto max-w-3xl space-y-5 px-page py-section">
         {settings.isPending ? <Spinner label="Cargando ajustes…" /> : null}
         {settings.isError ? <Alert tone="danger">{errorMessage(settings.error)}</Alert> : null}
         {settings.data ? (
@@ -162,7 +162,7 @@ function SectionNav({
   }, [sections, pinned]);
 
   return (
-    <nav ref={navRef} aria-label="Secciones de ajustes" className="sticky top-0 z-20 border-b border-border bg-bg/95 px-6 backdrop-blur">
+    <nav ref={navRef} aria-label="Secciones de ajustes" className="sticky top-0 z-20 border-b border-border bg-bg/95 px-page backdrop-blur">
       <ul className="mx-auto flex max-w-3xl gap-1 overflow-x-auto overflow-y-hidden">
         {sections.map((section) => {
           const current = section.id === active;

@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 
 export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-6 pt-6 pb-4">
+    <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-page pt-6 pb-4">
       <div className="min-w-0">
         <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
         {description ? <p className="mt-1 text-[13px] text-muted">{description}</p> : null}
@@ -38,7 +38,7 @@ export function Card({
       id={id}
       tabIndex={id ? -1 : undefined}
       aria-labelledby={title ? titleId : undefined}
-      className={`rounded-xl border border-border bg-surface shadow-card focus:outline-none ${className}`}
+      className={`rounded-card border border-border bg-surface shadow-card focus:outline-none ${className}`}
     >
       {title ? (
         <header className="flex items-start justify-between gap-3 border-b border-border px-5 py-3.5">

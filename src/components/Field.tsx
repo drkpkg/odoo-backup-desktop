@@ -7,7 +7,7 @@ function widthFor(className: string): string {
 }
 
 const CONTROL =
-  "h-9 rounded-md border border-border-strong bg-surface px-2.5 text-sm text-fg placeholder:text-subtle transition-colors hover:border-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-danger";
+  "h-control rounded-md border border-border-strong bg-surface px-2.5 text-sm text-fg placeholder:text-subtle transition-colors hover:border-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-danger";
 
 export type FieldProps = {
   label: ReactNode;

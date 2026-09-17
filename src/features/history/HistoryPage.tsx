@@ -71,7 +71,7 @@ export function HistoryPage({
         }
       />
 
-      <div className="space-y-4 px-6 py-5">
+      <div className="space-y-4 px-page py-section">
         <div className="flex flex-wrap items-end gap-3">
           <label className="space-y-1 text-[13px]">
             <span className="block font-medium">Instancia</span>
@@ -124,7 +124,7 @@ export function HistoryPage({
         {rows.length > 0 ? (
           // Columnas esenciales siempre visibles desde 900×600; SHA-256, Drive, archivo y errores
           // completos viven en la fila de detalles.
-          <div className="@container overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+          <div className="@container overflow-hidden rounded-card border border-border bg-surface shadow-card">
             <table className="w-full table-fixed text-left text-[13px]">
               <colgroup>
                 <col className="w-[9.5rem]" />

@@ -136,6 +136,15 @@ Códigos de issue: `manifest_missing`, `manifest_unreadable`, `manifest_invalid`
 La ruta `_sdk` es reservada (ningún plugin puede usar el id `_sdk`). Rutas relativas funcionan porque
 la página vive en `<base>/<id>/ui/index.html`; también se puede usar `obd-plugin://localhost/_sdk/...`.
 
+`obd-plugin.css` replica la paleta, el espaciado, las alturas de controles, los radios y las capas de
+la app como variables `--obd-*`, e incluye patrones listos (encabezado de página, estado vacío, aviso
+de capacidad no disponible, tabla que se apila en contenedores angostos y estados de carga). Lista
+completa y ejemplos: [`plugin-sdk/README.md`](../plugin-sdk/README.md). `src/styles.test.ts` falla si
+la paleta del SDK deja de coincidir con la de la app o si un color de texto baja de 4.5:1.
+
+En la app, los plugins que declaran `backend`, `destinations` o `hooks` muestran "Backend no disponible
+en esta versión" (fase B); el resto del plugin funciona.
+
 ### Mensajes
 
 Petición (plugin → app): `{ "obd": 1, "id": "7", "method": "storage.get", "params": { "key": "x" } }`

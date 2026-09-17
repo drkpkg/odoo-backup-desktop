@@ -149,7 +149,7 @@ export function ActionMenu({
               aria-label={label}
               onKeyDown={onMenuKeyDown}
               style={position}
-              className="z-40 max-h-[70vh] min-w-56 overflow-y-auto rounded-lg border border-border bg-surface py-1 shadow-overlay"
+              className="z-40 max-h-[70vh] min-w-56 overflow-y-auto rounded-overlay border border-border bg-surface py-1 shadow-overlay"
             >
               {visible.map((section, sectionIndex) => (
                 <div key={section.id} role="group" aria-label={section.title}>

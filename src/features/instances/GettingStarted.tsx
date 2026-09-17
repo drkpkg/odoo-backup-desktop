@@ -157,7 +157,7 @@ export function GettingStartedCard({ state, downloadDir, actions }: { state: Onb
   if (!state.next) return null;
   const { text, button } = nextAction(state.next, actions);
   return (
-    <section aria-labelledby="getting-started-title" className="mx-auto max-w-2xl rounded-xl border border-border bg-surface p-5 shadow-card">
+    <section aria-labelledby="getting-started-title" className="mx-auto max-w-2xl rounded-card border border-border bg-surface p-5 shadow-card">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 id="getting-started-title" className="text-base font-semibold">
@@ -194,7 +194,7 @@ export function GettingStartedBanner({
   if (!state.next) return null;
   const { text, button } = nextAction(state.next, actions);
   return (
-    <section aria-label="Primeros pasos" className="mb-4 rounded-xl border border-accent/30 bg-surface shadow-card">
+    <section aria-label="Primeros pasos" className="mb-4 rounded-card border border-accent/30 bg-surface shadow-card">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold">
@@ -209,7 +209,7 @@ export function GettingStartedBanner({
             aria-expanded={open}
             aria-controls={stepsId}
             onClick={() => setOpen((current) => !current)}
-            className="ml-1 inline-flex h-9 items-center gap-1 rounded-md px-2 text-[13px] text-muted hover:bg-surface-2 hover:text-fg"
+            className="ml-1 inline-flex h-control items-center gap-1 rounded-md px-2 text-[13px] text-muted hover:bg-surface-2 hover:text-fg"
           >
             <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} aria-hidden="true" />
             Ver pasos

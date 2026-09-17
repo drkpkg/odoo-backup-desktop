@@ -54,11 +54,18 @@ export function PluginPageView({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-4">
+      {/* Barra de la app (fuera del iframe): deja claro que el contenido es de un plugin. */}
+      <div className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Icon size={15} className="shrink-0 text-accent" aria-hidden="true" />
-          <h1 className="truncate text-sm font-semibold">{page.title}</h1>
-          <span className="truncate text-xs text-subtle">· {plugin.name}</span>
+          <Button size="sm" variant="ghost" icon={<ArrowLeft size={14} />} onClick={() => onNavigate(coreRoute("plugins"))} title="Volver a Plugins">
+            Plugins
+          </Button>
+          <span className="h-5 w-px shrink-0 bg-border" aria-hidden="true" />
+          <Icon size={16} className="shrink-0 text-accent" aria-hidden="true" />
+          <div className="min-w-0 leading-tight">
+            <h1 className="truncate text-sm font-semibold">{page.title}</h1>
+            <p className="truncate text-[11px] text-muted">Plugin · {plugin.name}</p>
+          </div>
         </div>
         {plugin.hasSettings ? (
           <Button size="sm" variant="ghost" icon={<Settings size={13} />} onClick={() => onOpenSettings(plugin.id)}>

@@ -71,13 +71,12 @@ export function AppLayout({
 
   return (
     <div className="flex h-full">
-      <aside className="flex w-52 shrink-0 flex-col border-r border-border bg-sidebar">
-        <div className="flex items-center gap-2.5 px-4 pt-5 pb-6">
-          <Logo size={28} />
-          <div className="leading-tight">
-            <p className="text-[15px] font-semibold tracking-tight">Odoo Backup Desktop</p>
-            <p className="text-[11px] text-subtle">Respaldos de Odoo</p>
-          </div>
+      <aside className="flex w-sidebar shrink-0 flex-col border-r border-border bg-sidebar">
+        <div className="flex items-center gap-2.5 px-4 pt-4 pb-4" title="Odoo Backup Desktop">
+          <Logo size={26} />
+          <p className="truncate text-[15px] font-semibold tracking-tight">
+            Odoo Backup<span className="sr-only"> Desktop</span>
+          </p>
         </div>
         <nav aria-label="Principal" className="flex-1 space-y-0.5 overflow-y-auto px-2">
           {NAV.map((item) => (

@@ -8,15 +8,19 @@
     <script type="module" src="./index.js"></script>
   </head>
   <body class="obd-page">
-    <h1>__PLUGIN_NAME__</h1>
-    <p class="obd-muted" id="status">Conectando…</p>
+    <header class="obd-page-header">
+      <div>
+        <h1>__PLUGIN_NAME__</h1>
+        <p id="status">Conectando…</p>
+      </div>
+      <div class="obd-page-header-actions">
+        <button type="button" class="obd-btn" id="settings">Ajustes</button>
+        <button type="button" class="obd-btn obd-btn-primary" id="hello">Saludar</button>
+      </div>
+    </header>
     <section class="obd-card">
       <h2>Instancias</h2>
       <ul id="instances"></ul>
     </section>
-    <div class="obd-row">
-      <button type="button" class="obd-btn obd-btn-primary" id="hello">Saludar</button>
-      <button type="button" class="obd-btn" id="settings">Ajustes</button>
-    </div>
   </body>
 </html>

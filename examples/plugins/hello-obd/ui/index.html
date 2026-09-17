@@ -8,16 +8,23 @@
     <script type="module" src="./index.js"></script>
   </head>
   <body class="obd-page">
-    <header class="obd-row obd-between">
+    <header class="obd-page-header">
       <div>
         <h1>Hola desde un plugin</h1>
-        <p class="obd-muted" id="context">Conectando con la app…</p>
+        <p id="context">Conectando con la app…</p>
       </div>
-      <div class="obd-row">
+      <div class="obd-page-header-actions">
         <button type="button" class="obd-btn" id="open-settings">Ajustes</button>
         <button type="button" class="obd-btn obd-btn-primary" id="open-window" disabled>Abrir ventana</button>
       </div>
     </header>
+
+    <div class="obd-banner obd-banner-neutral" role="note">
+      <div>
+        <p class="obd-banner-title">Capacidad no disponible en esta versión</p>
+        <p>Así se avisa de algo que el plugin todavía no puede hacer (por ejemplo, destinos de respaldo propios).</p>
+      </div>
+    </div>
 
     <section class="obd-grid">
       <article class="obd-card">
@@ -47,23 +54,36 @@
       </article>
     </section>
 
-    <section class="obd-card">
+    <section class="obd-stack">
       <h2>Instancias</h2>
-      <table class="obd-table">
-        <thead>
-          <tr>
-            <th>Instancia</th>
-            <th>Versión</th>
-            <th>Último respaldo</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="instances">
-          <tr>
-            <td colspan="4" class="obd-muted">Cargando…</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Tabla que se apila en tarjetas cuando el espacio es angosto (p. ej. en una ventana chica). -->
+      <div class="obd-table-wrap">
+        <p class="obd-loading" id="instances-loading" role="status" style="padding: 12px">
+          <span class="obd-spinner" aria-hidden="true"></span>Cargando instancias…
+        </p>
+        <div class="obd-empty" id="instances-empty" hidden>
+          <div class="obd-empty-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3" />
+              <path d="M3 5v14a9 3 0 0 0 18 0V5" />
+              <path d="M3 12a9 3 0 0 0 18 0" />
+            </svg>
+          </div>
+          <h2>No hay instancias</h2>
+          <p>Registra una instancia en la app y aparecerá aquí.</p>
+        </div>
+        <table class="obd-table obd-table-stack" id="instances-table" hidden>
+          <thead>
+            <tr>
+              <th>Instancia</th>
+              <th>Versión</th>
+              <th>Último respaldo</th>
+              <th><span class="obd-sr-only">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody id="instances"></tbody>
+        </table>
+      </div>
     </section>
   </body>
 </html>

@@ -29,7 +29,7 @@ function GateShell({ children }: { children: ReactNode }) {
           <Logo size={34} />
           <span className="text-lg font-semibold tracking-tight">Odoo Backup Desktop</span>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-6 shadow-card">{children}</div>
+        <div className="rounded-card border border-border bg-surface p-6 shadow-card">{children}</div>
       </div>
     </main>
   );

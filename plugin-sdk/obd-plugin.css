@@ -1,5 +1,6 @@
 /* Estilos base para páginas de plugins de Odoo Backup Desktop (API v1).
-   Paleta equivalente a la app; tema por `data-theme` (lo aplica el SDK) o por el sistema. */
+   Paleta, densidad y formas equivalentes a la app (se comprueba en src/styles.test.ts);
+   tema por `data-theme` (lo aplica el SDK) o por el sistema. */
 
 :root {
   color-scheme: light dark;
@@ -9,8 +10,8 @@
   --obd-border: #dfe3e8;
   --obd-border-strong: #c7cdd5;
   --obd-text: #17202a;
-  --obd-muted: #5b6776;
-  --obd-subtle: #8a94a1;
+  --obd-muted: #4f5a68;
+  --obd-subtle: #626d7c;
   --obd-accent: #0e6b63;
   --obd-accent-hover: #0b5a53;
   --obd-accent-fg: #ffffff;
@@ -25,7 +26,33 @@
   --obd-info-soft: #e3ecfa;
   --obd-focus: #3aa597;
   --obd-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
-  --obd-radius: 10px;
+  --obd-shadow-overlay: 0 12px 32px rgb(16 24 40 / 0.18);
+
+  /* Espaciado (escala de 4 px) y densidad de la app. En px: aquí `html` usa 14 px, así que
+     1rem no mide lo mismo que en la app. */
+  --obd-space-1: 4px;
+  --obd-space-2: 8px;
+  --obd-space-3: 12px;
+  --obd-space-4: 16px;
+  --obd-space-5: 20px;
+  --obd-space-6: 24px;
+  --obd-space-page: 24px;
+  --obd-space-section: 20px;
+  --obd-control-height: 36px;
+  --obd-control-height-sm: 28px;
+
+  /* Formas. `--obd-radius` se mantiene como alias del radio de tarjeta. */
+  --obd-radius-sm: 6px;
+  --obd-radius-card: 12px;
+  --obd-radius-overlay: 12px;
+  --obd-radius: var(--obd-radius-card);
+
+  /* Capas (z-index). */
+  --obd-z-sticky: 20;
+  --obd-z-dropdown: 30;
+  --obd-z-overlay: 40;
+  --obd-z-toast: 50;
+
   --obd-font: system-ui, -apple-system, "Segoe UI", "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
   --obd-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
 }
@@ -39,7 +66,7 @@
     --obd-border-strong: #353d48;
     --obd-text: #e5e9ee;
     --obd-muted: #9aa5b3;
-    --obd-subtle: #6f7a88;
+    --obd-subtle: #7e8997;
     --obd-accent: #3cb8a8;
     --obd-accent-hover: #55c8b9;
     --obd-accent-fg: #06201d;
@@ -54,6 +81,7 @@
     --obd-info-soft: #16243a;
     --obd-focus: #55c8b9;
     --obd-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --obd-shadow-overlay: 0 16px 40px rgb(0 0 0 / 0.55);
   }
 }
 
@@ -66,7 +94,7 @@
   --obd-border-strong: #353d48;
   --obd-text: #e5e9ee;
   --obd-muted: #9aa5b3;
-  --obd-subtle: #6f7a88;
+  --obd-subtle: #7e8997;
   --obd-accent: #3cb8a8;
   --obd-accent-hover: #55c8b9;
   --obd-accent-fg: #06201d;
@@ -81,6 +109,7 @@
   --obd-info-soft: #16243a;
   --obd-focus: #55c8b9;
   --obd-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --obd-shadow-overlay: 0 16px 40px rgb(0 0 0 / 0.55);
 }
 
 :root[data-theme="light"] {
@@ -91,6 +120,11 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* `hidden` debe ganar a las clases que fijan `display` (.obd-row, .obd-empty, .obd-loading…). */
+[hidden]:not([hidden="until-found"]) {
+  display: none !important;
 }
 
 html,
@@ -140,10 +174,10 @@ kbd {
 /* --- Layout -------------------------------------------------------------- */
 
 .obd-page {
-  padding: 20px 24px;
+  padding: var(--obd-space-section) var(--obd-space-page);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--obd-space-4);
 }
 
 .obd-row {
@@ -177,7 +211,7 @@ kbd {
 .obd-card {
   background: var(--obd-surface);
   border: 1px solid var(--obd-border);
-  border-radius: var(--obd-radius);
+  border-radius: var(--obd-radius-card);
   box-shadow: var(--obd-shadow);
   padding: 16px 18px;
 }
@@ -225,10 +259,10 @@ kbd {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 34px;
+  height: var(--obd-control-height);
   padding: 0 14px;
   border: 1px solid var(--obd-border-strong);
-  border-radius: 7px;
+  border-radius: var(--obd-radius-sm);
   background: var(--obd-surface);
   color: var(--obd-text);
   font: inherit;
@@ -269,7 +303,7 @@ kbd {
 }
 
 .obd-btn-sm {
-  height: 28px;
+  height: var(--obd-control-height-sm);
   padding: 0 10px;
   font-size: 13px;
 }
@@ -291,10 +325,10 @@ kbd {
 .obd-select,
 .obd-textarea {
   width: 100%;
-  min-height: 36px;
+  min-height: var(--obd-control-height);
   padding: 6px 10px;
   border: 1px solid var(--obd-border-strong);
-  border-radius: 7px;
+  border-radius: var(--obd-radius-sm);
   background: var(--obd-surface);
   color: var(--obd-text);
   font: inherit;
@@ -383,4 +417,239 @@ kbd {
 .obd-badge-info {
   background: var(--obd-info-soft);
   color: var(--obd-info);
+}
+
+/* --- Patrones ------------------------------------------------------------ */
+
+/* Encabezado de página: título, descripción y acciones a la derecha. */
+.obd-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--obd-space-3);
+  padding-bottom: var(--obd-space-4);
+  border-bottom: 1px solid var(--obd-border);
+}
+
+.obd-page-header h1 {
+  margin: 0;
+}
+
+.obd-page-header p {
+  margin: var(--obd-space-1) 0 0;
+  color: var(--obd-muted);
+  font-size: 13px;
+}
+
+.obd-page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--obd-space-2);
+}
+
+/* Estado vacío: icono, título, explicación y una acción. */
+.obd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--obd-space-2);
+  padding: 48px var(--obd-space-6);
+  text-align: center;
+}
+
+.obd-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--obd-accent-soft);
+  color: var(--obd-accent);
+  font-size: 22px;
+}
+
+.obd-empty h2 {
+  margin: var(--obd-space-1) 0 0;
+  font-size: 16px;
+}
+
+.obd-empty p {
+  max-width: 28rem;
+  margin: 0;
+  color: var(--obd-muted);
+  font-size: 13px;
+}
+
+/* Aviso en línea; `.obd-banner-neutral` para capacidades no disponibles en esta versión. */
+.obd-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--obd-space-3);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--obd-info-soft);
+  color: var(--obd-text);
+  font-size: 13px;
+}
+
+.obd-banner > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.obd-banner-title {
+  margin: 0;
+  color: var(--obd-info);
+  font-weight: 600;
+}
+
+.obd-banner p:not(.obd-banner-title) {
+  margin: 2px 0 0;
+}
+
+.obd-banner-success {
+  background: var(--obd-success-soft);
+}
+
+.obd-banner-success .obd-banner-title {
+  color: var(--obd-success);
+}
+
+.obd-banner-warning {
+  background: var(--obd-warning-soft);
+}
+
+.obd-banner-warning .obd-banner-title {
+  color: var(--obd-warning);
+}
+
+.obd-banner-danger {
+  background: var(--obd-danger-soft);
+}
+
+.obd-banner-danger .obd-banner-title {
+  color: var(--obd-danger);
+}
+
+.obd-banner-neutral {
+  background: var(--obd-surface-2);
+}
+
+.obd-banner-neutral .obd-banner-title {
+  color: var(--obd-text);
+}
+
+/* Tabla responsive: dentro de `.obd-table-wrap`, `.obd-table-stack` apila cada fila en tarjetas
+   cuando el contenedor mide menos de 520 px. Cada celda necesita `data-label`. */
+.obd-table-wrap {
+  container-type: inline-size;
+  overflow-x: auto;
+  border: 1px solid var(--obd-border);
+  border-radius: var(--obd-radius-card);
+  background: var(--obd-surface);
+}
+
+@container (max-width: 520px) {
+  .obd-table-stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .obd-table-stack tr {
+    display: block;
+    padding: var(--obd-space-2) 10px;
+    border-bottom: 1px solid var(--obd-border);
+  }
+
+  .obd-table-stack tr:last-child {
+    border-bottom: 0;
+  }
+
+  .obd-table-stack td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--obd-space-3);
+    padding: 3px 0;
+    border: 0;
+    text-align: right;
+  }
+
+  .obd-table-stack td::before {
+    content: attr(data-label);
+    color: var(--obd-muted);
+    font-size: 12px;
+    text-align: left;
+  }
+
+  .obd-table-stack td[data-label=""]::before {
+    content: none;
+  }
+}
+
+/* Carga: indicador en línea y bloques de relleno. */
+.obd-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--obd-space-2);
+  color: var(--obd-muted);
+  font-size: 13px;
+}
+
+.obd-spinner {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 2px solid var(--obd-border-strong);
+  border-top-color: var(--obd-accent);
+  border-radius: 50%;
+  animation: obd-spin 0.8s linear infinite;
+}
+
+.obd-skeleton {
+  min-height: 12px;
+  border-radius: var(--obd-radius-sm);
+  background: linear-gradient(90deg, var(--obd-surface-2), var(--obd-border), var(--obd-surface-2));
+  background-size: 200% 100%;
+  animation: obd-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes obd-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes obd-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obd-spinner {
+    animation-duration: 2.4s;
+  }
+
+  .obd-skeleton {
+    animation: none;
+  }
+}
+
+/* Solo para lectores de pantalla. */
+.obd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
