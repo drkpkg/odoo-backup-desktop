@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { History, Loader, Lock, Puzzle, Server, Settings } from "lucide-react";
+import { History, LoaderCircle, Lock, Puzzle, Server, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Logo } from "../../components/Logo";
@@ -51,7 +51,7 @@ export function AppLayout({
 }) {
   const queryClient = useQueryClient();
   const toast = useToast();
-  const { running, state } = useBackupJobs();
+  const { running, state, panelExpanded, showJob } = useBackupJobs();
   const plugins = usePlugins();
   const openMenu = useOpenPluginMenu(onNavigate);
   const sidebarMenus = pluginMenus(plugins.data, "sidebar");
@@ -116,11 +116,17 @@ export function AppLayout({
           ) : null}
         </nav>
         <div className="space-y-2 border-t border-border px-3 py-3">
-          {running.length > 0 ? (
-            <p className="flex items-center gap-2 px-1 text-xs text-accent" role="status">
-              <Loader size={13} className="animate-spin motion-reduce:animate-none" />
+          {running[0] ? (
+            // Acceso al panel (no es live: los anuncios los hace el propio panel).
+            <button
+              type="button"
+              onClick={() => running[0] && showJob(running[0].jobId)}
+              title="Ver progreso"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-accent hover:bg-surface/60"
+            >
+              <LoaderCircle size={13} className="shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />
               {running.length === 1 ? "1 respaldo en curso" : `${running.length} respaldos en curso`}
-            </p>
+            </button>
           ) : null}
           <button
             type="button"
@@ -134,7 +140,7 @@ export function AppLayout({
       </aside>
       <main
         className={`relative min-w-0 flex-1 ${isPluginPage ? "overflow-hidden" : "overflow-y-auto"} ${
-          state.order.length > 0 && !isPluginPage ? "pb-48" : ""
+          state.order.length > 0 && !isPluginPage ? (panelExpanded ? "pb-48" : "pb-16") : ""
         }`}
       >
         {children}

@@ -17,7 +17,7 @@ function formatBytes(bytes) {
 
 const STATUS = {
   running: ["En curso", "info"],
-  success: ["Correcto", "success"],
+  success: ["Completado", "success"],
   failed: ["Fallido", "danger"],
   cancelled: ["Cancelado", "neutral"],
 };

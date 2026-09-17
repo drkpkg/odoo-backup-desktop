@@ -9,7 +9,7 @@ import { Button } from "../../components/Button";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Dialog } from "../../components/Dialog";
 import { EmptyState, PageHeader } from "../../components/Layout";
-import { ProgressBar, Spinner } from "../../components/Spinner";
+import { Spinner } from "../../components/Spinner";
 import { useToast } from "../../components/Toast";
 import { errorMessage, messageForCode } from "../../lib/errors";
 import { formatRelative } from "../../lib/format";
@@ -18,7 +18,6 @@ import { HISTORY_STATUS_LABELS } from "../../lib/labels";
 import { queryKeys } from "../../lib/query";
 import type { InstanceView, ProbeReport } from "../../lib/types";
 import { useBackupJobs } from "../backups/BackupJobsProvider";
-import { describeJob } from "../backups/jobs";
 import { pluginMenus, type PluginMenuEntry, type Route } from "../layout/navigation";
 import { pluginIcon } from "../plugins/icons";
 import { useOpenPluginMenu, usePlugins } from "../plugins/usePlugins";
@@ -239,7 +238,7 @@ function InstanceRow({
   pluginActions: PluginMenuEntry[];
   onPluginAction: (entry: PluginMenuEntry) => void;
 }) {
-  const { runningFor } = useBackupJobs();
+  const { runningFor, showJob } = useBackupJobs();
   const job = runningFor(instance.id);
   const last = instance.lastBackup;
   const connection = connectionState(instance);
@@ -314,11 +313,19 @@ function InstanceRow({
       </td>
       <td className="px-3 py-3">
         {job ? (
-          <div className="min-w-0 space-y-1">
-            <p className="truncate text-xs text-accent" title={describeJob(job).label}>
-              {describeJob(job).label}
-            </p>
-            <ProgressBar value={describeJob(job).percent} label={`Progreso del respaldo de ${instance.name}`} />
+          // El progreso detallado vive solo en el panel flotante; aquí, estado breve + enlace.
+          <div className="flex min-w-0 flex-col items-start gap-0.5">
+            <Badge tone="accent" icon={<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent motion-reduce:animate-none" aria-hidden="true" />}>
+              En curso
+            </Badge>
+            <button
+              type="button"
+              onClick={() => showJob(job.jobId)}
+              aria-label={`Ver progreso del respaldo de ${instance.name}`}
+              className="rounded text-xs font-medium text-accent hover:underline"
+            >
+              Ver progreso
+            </button>
           </div>
         ) : last ? (
           <div className="flex min-w-0 flex-col items-start gap-0.5">

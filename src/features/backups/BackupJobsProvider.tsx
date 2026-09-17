@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 
 import { useToast } from "../../components/Toast";
 import { messageForCode, toAppError } from "../../lib/errors";
@@ -16,6 +16,13 @@ type BackupJobsApi = {
   cancel: (jobId: string) => Promise<void>;
   dismiss: (jobId: string) => void;
   runningFor: (instanceId: string) => JobState | undefined;
+  /** El panel flotante está desplegado (si no, se ve solo su resumen). */
+  panelExpanded: boolean;
+  setPanelExpanded: (expanded: boolean) => void;
+  /** Despliega el panel y lleva el foco a la tarjeta del job. */
+  showJob: (jobId: string) => void;
+  /** Última petición de `showJob` (el `nonce` permite repetirla con el mismo job). */
+  highlight: { jobId: string; nonce: number } | null;
 };
 
 const BackupJobsContext = createContext<BackupJobsApi | null>(null);
@@ -24,6 +31,8 @@ const RESTORE_POLL_MS = 2000;
 
 export function BackupJobsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(jobsReducer, initialJobsState);
+  const [panelExpanded, setPanelExpanded] = useState(true);
+  const [highlight, setHighlight] = useState<BackupJobsApi["highlight"]>(null);
   const queryClient = useQueryClient();
   const toast = useToast();
   const stateRef = useRef(state);
@@ -73,6 +82,8 @@ export function BackupJobsProvider({ children }: { children: ReactNode }) {
     async (instanceId: string) => {
       try {
         const jobId = await ipc.startBackup(instanceId, (event) => handleEvent(instanceId, event));
+        // Un respaldo nuevo siempre muestra su progreso, aunque el panel estuviera minimizado.
+        setPanelExpanded(true);
         void queryClient.invalidateQueries({ queryKey: queryKeys.historyAll });
         return jobId;
       } catch (error) {
@@ -93,6 +104,11 @@ export function BackupJobsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const dismiss = useCallback((jobId: string) => dispatch({ type: "dismiss", jobId }), []);
+
+  const showJob = useCallback((jobId: string) => {
+    setPanelExpanded(true);
+    setHighlight({ jobId, nonce: Date.now() });
+  }, []);
 
   // Restaurar jobs en curso (p. ej. tras recargar la ventana) y seguirlos por polling.
   useEffect(() => {
@@ -139,8 +155,12 @@ export function BackupJobsProvider({ children }: { children: ReactNode }) {
       cancel,
       dismiss,
       runningFor: (instanceId) => running.find((job) => job.instanceId === instanceId),
+      panelExpanded,
+      setPanelExpanded,
+      showJob,
+      highlight,
     };
-  }, [state, start, cancel, dismiss]);
+  }, [state, start, cancel, dismiss, panelExpanded, showJob, highlight]);
 
   return <BackupJobsContext.Provider value={api}>{children}</BackupJobsContext.Provider>;
 }

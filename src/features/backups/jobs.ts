@@ -200,3 +200,29 @@ export function describeJob(job: JobState): JobDescription {
       return { label: STAGE_LABELS.retention, percent: null };
   }
 }
+
+/** Resumen de una línea para la cabecera del panel (también visible con el panel minimizado). */
+export function jobsSummary(jobs: JobState[]): string {
+  const running = jobs.filter((job) => job.status === "running");
+  const [single] = running;
+  if (running.length === 1 && single) {
+    const { percent } = describeJob(single);
+    return percent !== null ? `1 respaldo en curso · ${percent}%` : "1 respaldo en curso";
+  }
+  if (running.length > 1) return `${running.length} respaldos en curso`;
+  const count = (status: JobStatus) => jobs.filter((job) => job.status === status).length;
+  const failed = count("failed");
+  if (failed > 0) return failed === 1 ? "1 respaldo falló" : `${failed} respaldos fallaron`;
+  const completed = count("completed");
+  if (completed > 0) return completed === 1 ? "Respaldo completado" : `${completed} respaldos completados`;
+  return count("cancelled") === 1 ? "Respaldo cancelado" : "Respaldos cancelados";
+}
+
+/**
+ * Texto para lectores de pantalla: solo la fase, sin bytes ni tiempos, para que un `role="status"`
+ * anuncie los cambios de fase y no cada actualización. El resultado final lo anuncia el toast.
+ */
+export function stageAnnouncement(job: JobState, instanceName: string): string {
+  if (job.status !== "running") return "";
+  return `Respaldo de ${instanceName}: ${STAGE_LABELS[job.stage ?? "requesting"]}`;
+}

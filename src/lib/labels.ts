@@ -48,7 +48,7 @@ export const STAGE_LABELS: Record<BackupStage, string> = {
 
 export const HISTORY_STATUS_LABELS: Record<HistoryStatus, string> = {
   running: "En curso",
-  success: "Correcto",
+  success: "Completado",
   failed: "Fallido",
   cancelled: "Cancelado",
 };

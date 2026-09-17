@@ -3,7 +3,7 @@ import obd from "../../_sdk/obd-plugin.js";
 
 const $ = (selector) => document.querySelector(selector);
 
-const STATUS_LABELS = { running: "En curso", success: "Correcto", failed: "Fallido", cancelled: "Cancelado" };
+const STATUS_LABELS = { running: "En curso", success: "Completado", failed: "Fallido", cancelled: "Cancelado" };
 const STATUS_TONES = { running: "info", success: "success", failed: "danger", cancelled: "neutral" };
 
 function showError(error) {

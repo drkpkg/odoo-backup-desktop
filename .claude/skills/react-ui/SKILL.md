@@ -21,6 +21,9 @@ The UI is a thin client over the Rust commands documented in `docs/architecture.
 - Probe results are interpreted by `src/features/instances/readiness.ts` (`assessReadiness` mirrors
   `resolve_transport` in `backup.rs`; `probeGuidance` gives one next step + optional one-click fix).
   Keep both in sync with the backend when transport rules change.
+- Backup progress is shown only in `BackupJobsPanel` (one bar per job, collapsible, one stage-only
+  `role="status"` per job). Elsewhere show a short state and link to it with `showJob(jobId)` from
+  `useBackupJobs()`; never render another `ProgressBar` for the same job.
 - Verify layout changes with the headless Chromium checks at 1180×780 and 900×600, light and dark.
 
 ## Stack

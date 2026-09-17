@@ -2,7 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MockBackend } from "../../lib/mock-backend";
 import type { BackupEvent, HistoryEntry } from "../../lib/types";
-import { describeJob, initialJobsState, jobsReducer, runningJobForInstance, runningJobs, type JobsState } from "./jobs";
+import {
+  describeJob,
+  initialJobsState,
+  jobsReducer,
+  jobsSummary,
+  runningJobForInstance,
+  runningJobs,
+  stageAnnouncement,
+  type JobsState,
+} from "./jobs";
 
 const entry: HistoryEntry = {
   id: "h1",
@@ -97,6 +106,34 @@ describe("jobsReducer", () => {
       jobs: [{ jobId: "j1", instanceId: "i1", stage: "downloading", startedAt: "2026-09-16T10:00:00Z" }],
     });
     expect(state.jobs.j1!.stage).toBe("validating");
+  });
+});
+
+describe("panel texts", () => {
+  const job = (jobId: string, events: BackupEvent[]) => apply(events).jobs[jobId]!;
+
+  it("summarizes running and finished jobs in one line", () => {
+    const downloading = job("j1", [{ type: "progress", jobId: "j1", stage: "downloading", received: 50, total: 200 }]);
+    const preparing = job("j2", [{ type: "progress", jobId: "j2", stage: "server_preparing", elapsedSecs: 4 }]);
+    const failed = job("j3", [{ type: "failed", jobId: "j3", code: "internal", message: "x" }]);
+    const done = job("j4", [{ type: "completed", jobId: "j4", entry }]);
+    const cancelled = job("j5", [{ type: "cancelled", jobId: "j5" }]);
+
+    expect(jobsSummary([downloading, done])).toBe("1 respaldo en curso · 25%");
+    // Phases without a percentage never show a number.
+    expect(jobsSummary([preparing])).toBe("1 respaldo en curso");
+    expect(jobsSummary([downloading, preparing])).toBe("2 respaldos en curso");
+    expect(jobsSummary([done, failed])).toBe("1 respaldo falló");
+    expect(jobsSummary([done, done])).toBe("2 respaldos completados");
+    expect(jobsSummary([cancelled])).toBe("Respaldo cancelado");
+  });
+
+  it("announces only the stage, not bytes or elapsed time", () => {
+    const preparing = job("j1", [{ type: "progress", jobId: "j1", stage: "server_preparing", elapsedSecs: 9 }]);
+    expect(stageAnnouncement(preparing, "Cliente")).toBe("Respaldo de Cliente: El servidor está preparando el respaldo");
+    const downloading = job("j1", [{ type: "progress", jobId: "j1", stage: "downloading", received: 10, total: 20 }]);
+    expect(stageAnnouncement(downloading, "Cliente")).toBe("Respaldo de Cliente: Descargando");
+    expect(stageAnnouncement(job("j2", [{ type: "cancelled", jobId: "j2" }]), "Cliente")).toBe("");
   });
 });
 
