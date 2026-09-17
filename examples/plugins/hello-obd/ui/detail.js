@@ -63,7 +63,7 @@ async function main() {
     const cell = body.insertRow().insertCell();
     cell.colSpan = 3;
     cell.className = "obd-muted";
-    cell.textContent = "Sin backups todavía.";
+    cell.textContent = "Sin respaldos todavía.";
     return;
   }
   for (const entry of history) {

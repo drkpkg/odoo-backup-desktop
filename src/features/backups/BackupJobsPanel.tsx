@@ -25,7 +25,7 @@ export function BackupJobsPanel() {
 
   return (
     <section
-      aria-label="Backups en curso"
+      aria-label="Respaldos en curso"
       className="fixed right-4 bottom-4 z-40 flex max-h-[60vh] w-96 flex-col gap-2 overflow-y-auto"
     >
       {jobs.map((job) => (
@@ -46,7 +46,7 @@ function JobCard({ job, instanceName }: { job: JobState; instanceName: string })
     try {
       await cancel(job.jobId);
     } catch (err) {
-      toast.error("No se pudo cancelar el backup", errorMessage(err));
+      toast.error("No se pudo cancelar el respaldo", errorMessage(err));
       setCancelling(false);
     }
   };
@@ -57,7 +57,7 @@ function JobCard({ job, instanceName }: { job: JobState; instanceName: string })
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{instanceName}</p>
           <p className="text-xs text-subtle">
-            {job.transport ? TRANSPORT_LABELS[job.transport] : "Backup"}
+            {job.transport ? TRANSPORT_LABELS[job.transport] : "Respaldo"}
             {job.status === "running" && job.live ? ` · ${formatClock(elapsed)}` : ""}
           </p>
         </div>

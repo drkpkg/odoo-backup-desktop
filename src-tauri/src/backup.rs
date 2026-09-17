@@ -353,7 +353,7 @@ impl<R: Runtime> Job<R> {
                 tracing::error!(job = %self.job_id, error = %err, "could not record Drive result");
             }
             if drive.status == DriveUploadStatus::Failed {
-                self.notify("Backup guardado, pero falló la subida a Google Drive", &self.instance.name);
+                self.notify("Respaldo guardado, pero falló la subida a Google Drive", &self.instance.name);
             }
         }
 
@@ -372,7 +372,7 @@ impl<R: Runtime> Job<R> {
                 message: "backup finished but the history entry could not be read".into(),
             }),
         }
-        self.notify("Backup completado", &format!("{} · {}", self.instance.name, human_size(backup.size)));
+        self.notify("Respaldo completado", &format!("{} · {}", self.instance.name, human_size(backup.size)));
     }
 
     async fn apply_local_retention(&self, settings: &Settings) {
@@ -478,7 +478,7 @@ impl<R: Runtime> Job<R> {
         } else {
             tracing::warn!(job = %self.job_id, code = %err.code, error = %err.message, "backup failed");
             self.emit(BackupEvent::Failed { job_id: self.job_id.clone(), code: err.code, message: err.message });
-            self.notify("Backup fallido", &self.instance.name);
+            self.notify("Respaldo fallido", &self.instance.name);
         }
     }
 

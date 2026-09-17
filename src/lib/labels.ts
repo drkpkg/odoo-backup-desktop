@@ -39,7 +39,7 @@ export const PROTOCOL_LABELS: Record<RpcProtocol, string> = {
 
 export const STAGE_LABELS: Record<BackupStage, string> = {
   requesting: "Solicitando",
-  server_preparing: "El servidor está preparando el backup",
+  server_preparing: "El servidor está preparando el respaldo",
   downloading: "Descargando",
   validating: "Validando",
   uploading: "Subiendo a Google Drive",
@@ -71,7 +71,7 @@ export const PROBE_WARNINGS: Record<ProbeWarning, WarningInfo> = {
   master_password_over_wire: {
     title: "Se envía la contraseña maestra",
     detail:
-      "El gestor de BD recibe la contraseña maestra en cada backup. Si el servidor todavía usa la contraseña por defecto «admin», Odoo la reemplazará por la que envíes y la guardará en su archivo de configuración.",
+      "El gestor de BD recibe la contraseña maestra en cada respaldo. Si el servidor todavía usa la contraseña por defecto «admin», Odoo la reemplazará por la que envíes y la guardará en su archivo de configuración.",
     severity: "warning",
   },
   unsupported_version: {

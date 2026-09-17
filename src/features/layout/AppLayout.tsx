@@ -76,7 +76,7 @@ export function AppLayout({
           <Logo size={28} />
           <div className="leading-tight">
             <p className="text-[15px] font-semibold tracking-tight">Odoo Backup Desktop</p>
-            <p className="text-[11px] text-subtle">Backups de Odoo</p>
+            <p className="text-[11px] text-subtle">Respaldos de Odoo</p>
           </div>
         </div>
         <nav aria-label="Principal" className="flex-1 space-y-0.5 overflow-y-auto px-2">
@@ -119,7 +119,7 @@ export function AppLayout({
           {running.length > 0 ? (
             <p className="flex items-center gap-2 px-1 text-xs text-accent" role="status">
               <Loader size={13} className="animate-spin motion-reduce:animate-none" />
-              {running.length === 1 ? "1 backup en curso" : `${running.length} backups en curso`}
+              {running.length === 1 ? "1 respaldo en curso" : `${running.length} respaldos en curso`}
             </p>
           ) : null}
           <button

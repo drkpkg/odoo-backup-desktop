@@ -25,7 +25,7 @@ export function DriveSection({ settings }: { settings: Settings }) {
           <Cloud size={16} className="text-accent" /> Google Drive
         </span>
       }
-      description="Sube automáticamente los backups validados a una carpeta de Google Drive."
+      description="Sube automáticamente los respaldos validados a una carpeta de Google Drive."
     >
       {drive.isPending ? <Spinner label="Consultando Google Drive…" /> : null}
       {drive.isError ? <Alert tone="danger">{errorMessage(drive.error)}</Alert> : null}
@@ -290,7 +290,7 @@ function OptionsBlock({ settings }: { settings: Settings }) {
         </Field>
       </div>
 
-      <Field label="Backups a conservar en Drive por instancia">
+      <Field label="Respaldos a conservar en Drive por instancia">
         {({ id, describedBy }) => (
           <NullableNumberInput
             id={id}

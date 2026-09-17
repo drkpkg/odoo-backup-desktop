@@ -2,32 +2,28 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CloudUpload, DatabaseBackup, History, Pencil, PlugZap, Plus, Server, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+import { ActionMenu, type ActionMenuSection } from "../../components/ActionMenu";
 import { Alert } from "../../components/Alert";
 import { Badge } from "../../components/Badge";
-import { Button, IconButton } from "../../components/Button";
+import { Button } from "../../components/Button";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Dialog } from "../../components/Dialog";
 import { EmptyState, PageHeader } from "../../components/Layout";
 import { ProgressBar, Spinner } from "../../components/Spinner";
 import { useToast } from "../../components/Toast";
 import { errorMessage, messageForCode } from "../../lib/errors";
-import { formatOdooVersion, formatRelative } from "../../lib/format";
+import { formatRelative } from "../../lib/format";
 import { ipc } from "../../lib/ipc";
-import {
-  HISTORY_STATUS_LABELS,
-  PROTOCOL_LABELS,
-  PROTOCOL_PREFERENCE_LABELS,
-  TRANSPORT_LABELS,
-  TRANSPORT_PREFERENCE_LABELS,
-} from "../../lib/labels";
+import { HISTORY_STATUS_LABELS } from "../../lib/labels";
 import { queryKeys } from "../../lib/query";
 import type { InstanceView, ProbeReport } from "../../lib/types";
 import { useBackupJobs } from "../backups/BackupJobsProvider";
 import { describeJob } from "../backups/jobs";
 import { pluginMenus, type PluginMenuEntry, type Route } from "../layout/navigation";
-import { InstanceActionsMenu } from "../plugins/InstanceActionsMenu";
+import { pluginIcon } from "../plugins/icons";
 import { useOpenPluginMenu, usePlugins } from "../plugins/usePlugins";
 import { STATUS_TONES } from "../history/tones";
+import { connectionState } from "./connection";
 import { InstanceFormDialog } from "./InstanceFormDialog";
 import { ProbeReportView } from "./ProbeReportView";
 import { probeRequestForInstance } from "./schema";
@@ -70,7 +66,7 @@ export function InstancesPage({
     try {
       await jobs.start(instance.id);
     } catch (err) {
-      toast.error(`No se pudo iniciar el backup de ${instance.name}`, errorMessage(err));
+      toast.error(`No se pudo iniciar el respaldo de ${instance.name}`, errorMessage(err));
     } finally {
       setStarting(null);
     }
@@ -111,7 +107,7 @@ export function InstancesPage({
           <EmptyState
             icon={<Server size={22} />}
             title="Aún no hay instancias"
-            description="Registra una instancia Odoo (15 a 19) con su URL y credenciales para empezar a hacer backups."
+            description="Registra una instancia Odoo (15 a 19) con su URL y credenciales para empezar a hacer respaldos."
             action={
               <Button variant="primary" icon={<Plus size={15} />} onClick={openCreate}>
                 Nueva instancia
@@ -121,16 +117,22 @@ export function InstancesPage({
         ) : null}
 
         {list.length > 0 ? (
-          <div className="overflow-x-auto rounded-xl border border-border bg-surface shadow-card">
-            <table className="w-full min-w-[820px] text-left text-[13px]">
+          // `table-fixed` + anchos por columna: sin scroll horizontal desde 900×600. El detalle técnico
+          // de la conexión solo aparece cuando el contenedor es ancho (container query).
+          <div className="@container overflow-hidden rounded-xl border border-border bg-surface shadow-card">
+            <table className="w-full table-fixed text-left text-[13px]">
+              <colgroup>
+                <col />
+                <col className="w-[9.75rem] @3xl:w-[17rem]" />
+                <col className="w-[8.5rem] @3xl:w-[11rem]" />
+                <col className="w-[8.75rem]" />
+              </colgroup>
               <thead className="border-b border-border bg-surface-2/60 text-xs text-muted">
                 <tr>
-                  <th scope="col" className="px-4 py-2.5 font-medium">Instancia</th>
-                  <th scope="col" className="px-3 py-2.5 font-medium">Versión</th>
-                  <th scope="col" className="px-3 py-2.5 font-medium">Protocolo</th>
-                  <th scope="col" className="px-3 py-2.5 font-medium">Transporte</th>
-                  <th scope="col" className="px-3 py-2.5 font-medium">Último backup</th>
-                  <th scope="col" className="px-4 py-2.5 text-right font-medium">
+                  <th scope="col" className="py-2.5 pr-3 pl-4 font-medium">Instancia</th>
+                  <th scope="col" className="px-3 py-2.5 font-medium">Conexión</th>
+                  <th scope="col" className="px-3 py-2.5 font-medium">Último respaldo</th>
+                  <th scope="col" className="py-2.5 pr-4 pl-2 text-right font-medium">
                     <span className="sr-only">Acciones</span>
                   </th>
                 </tr>
@@ -195,7 +197,7 @@ export function InstancesPage({
       >
         <p>
           Se eliminará <strong className="text-fg">{deleting?.name}</strong> y sus credenciales de la bóveda. Los archivos de
-          backup ya descargados y el historial no se borran.
+          respaldo ya descargados y el historial no se borran.
         </p>
       </ConfirmDialog>
     </>
@@ -225,60 +227,94 @@ function InstanceRow({
 }) {
   const { runningFor } = useBackupJobs();
   const job = runningFor(instance.id);
-  const probe = instance.lastProbe;
   const last = instance.lastBackup;
+  const connection = connectionState(instance);
+  const runningReason = "Espera a que termine el respaldo en curso";
 
-  // Con preferencia automática se muestra lo detectado en la última prueba.
-  const autoTransport = instance.transport === "auto" && probe?.recommendedTransport ? probe.recommendedTransport : null;
-  const transportText = autoTransport ? TRANSPORT_LABELS[autoTransport] : TRANSPORT_PREFERENCE_LABELS[instance.transport];
-  const autoProtocol = instance.protocol === "auto" && probe?.protocol ? probe.protocol : null;
-  const protocolText = autoProtocol ? PROTOCOL_LABELS[autoProtocol] : PROTOCOL_PREFERENCE_LABELS[instance.protocol];
+  const sections: ActionMenuSection[] = [
+    {
+      id: "instance",
+      items: [
+        { id: "probe", label: "Probar conexión", icon: <PlugZap size={14} />, onSelect: onProbe },
+        { id: "history", label: "Ver historial", icon: <History size={14} />, onSelect: onHistory },
+        { id: "edit", label: "Editar", icon: <Pencil size={14} />, onSelect: onEdit },
+      ],
+    },
+    {
+      id: "plugins",
+      title: "Extensiones",
+      items: pluginActions.map((entry) => {
+        const Icon = pluginIcon(entry.menu.icon);
+        return {
+          id: `${entry.plugin.id}:${entry.menu.id}`,
+          label: entry.menu.label,
+          hint: entry.plugin.name,
+          icon: <Icon size={14} />,
+          onSelect: () => onPluginAction(entry),
+        };
+      }),
+    },
+    {
+      id: "danger",
+      items: [
+        {
+          id: "delete",
+          label: "Eliminar",
+          icon: <Trash2 size={14} />,
+          tone: "danger",
+          disabled: Boolean(job),
+          disabledReason: runningReason,
+          onSelect: onDelete,
+        },
+      ],
+    },
+  ];
 
   return (
     <tr className="align-middle hover:bg-surface-2/40">
-      <td className="max-w-[14rem] py-3 pr-3 pl-4">
-        <div className="flex items-center gap-2">
-          <p className="truncate font-medium text-fg">{instance.name}</p>
+      <td className="py-3 pr-3 pl-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="truncate font-medium text-fg" title={instance.name}>
+            {instance.name}
+          </p>
           {instance.uploadToDrive ? (
-            <CloudUpload size={13} className="shrink-0 text-subtle" aria-label="Sube a Google Drive" />
+            <CloudUpload size={13} className="shrink-0 text-subtle" role="img" aria-label="Sube a Google Drive" />
           ) : null}
         </div>
-        <p className="truncate text-xs text-muted" title={instance.url}>
-          {instance.url.replace(/^https?:\/\//, "")} · {instance.database}
+        <p className="truncate text-xs text-muted" title={`${instance.url} · ${instance.database}`}>
+          {instance.url.replace(/^https?:\/\//, "").replace(/\/$/, "")} · {instance.database}
         </p>
       </td>
-      <td className="px-3 py-3 whitespace-nowrap">
-        {probe ? (
-          <Badge tone={probe.supported ? "neutral" : "warning"} title={probe.version.serverVersion}>
-            {formatOdooVersion(probe.version)}
-          </Badge>
-        ) : (
-          <span className="text-xs text-subtle">Sin probar</span>
-        )}
+      <td className="px-3 py-3">
+        <p className="flex min-w-0 items-center gap-1.5" title={connection.reason}>
+          <span className={`h-2 w-2 shrink-0 rounded-full ${DOT_TONES[connection.tone]}`} aria-hidden="true" />
+          <span className="truncate font-medium text-fg">{connection.label}</span>
+          <span className="sr-only">. {connection.reason}</span>
+        </p>
+        {connection.version ? (
+          <p className="truncate text-xs text-muted">
+            Odoo {connection.version}
+            {connection.technical ? <span className="hidden @3xl:inline"> · {connection.technical}</span> : null}
+          </p>
+        ) : null}
       </td>
-      <td className="px-3 py-3 text-muted">
-        <span className="whitespace-nowrap">{protocolText}</span>
-        {autoProtocol ? <span className="block text-[11px] text-subtle">automático</span> : null}
-      </td>
-      <td className="max-w-[8.5rem] px-3 py-3 text-muted">
-        <span>{transportText}</span>
-        {autoTransport ? <span className="block text-[11px] text-subtle">automático</span> : null}
-      </td>
-      <td className="min-w-[9rem] px-3 py-3">
+      <td className="px-3 py-3">
         {job ? (
-          <div className="space-y-1">
-            <p className="truncate text-xs text-accent">{describeJob(job).label}</p>
-            <ProgressBar value={describeJob(job).percent} />
+          <div className="min-w-0 space-y-1">
+            <p className="truncate text-xs text-accent" title={describeJob(job).label}>
+              {describeJob(job).label}
+            </p>
+            <ProgressBar value={describeJob(job).percent} label={`Progreso del respaldo de ${instance.name}`} />
           </div>
         ) : last ? (
-          <div className="flex flex-col items-start gap-0.5">
+          <div className="flex min-w-0 flex-col items-start gap-0.5">
             <Badge
               tone={STATUS_TONES[last.status]}
               title={last.status === "failed" && last.errorCode ? messageForCode(last.errorCode) : undefined}
             >
               {HISTORY_STATUS_LABELS[last.status]}
             </Badge>
-            <span className="text-xs text-muted" title={last.startedAt}>
+            <span className="truncate text-xs text-muted" title={last.startedAt}>
               {formatRelative(last.finishedAt ?? last.startedAt)}
             </span>
           </div>
@@ -287,26 +323,31 @@ function InstanceRow({
         )}
       </td>
       <td className="py-3 pr-3 pl-2">
-        <div className="flex items-center justify-end gap-0.5">
+        <div className="flex items-center justify-end gap-1">
           <Button
             size="sm"
             variant="primary"
-            icon={<DatabaseBackup size={14} />}
+            icon={<DatabaseBackup size={14} aria-hidden="true" />}
             onClick={onBackup}
             loading={starting}
             disabled={Boolean(job)}
-            aria-label="Backup ahora"
-            title={job ? "Ya hay un backup en curso" : "Backup ahora"}
+            aria-label={`Respaldar ${instance.name}`}
+            title={job ? "Ya hay un respaldo en curso" : "Respaldar ahora"}
           >
-            Backup
+            Respaldar
           </Button>
-          <IconButton label="Probar conexión" icon={<PlugZap size={15} />} onClick={onProbe} />
-          <IconButton label="Ver historial" icon={<History size={15} />} onClick={onHistory} />
-          <IconButton label="Editar" icon={<Pencil size={15} />} onClick={onEdit} />
-          <IconButton label="Eliminar" tone="danger" icon={<Trash2 size={15} />} onClick={onDelete} disabled={Boolean(job)} />
-          <InstanceActionsMenu instance={instance} entries={pluginActions} onSelect={(entry) => onPluginAction(entry)} />
+          <ActionMenu label={`Más acciones para ${instance.name}`} sections={sections} />
         </div>
       </td>
     </tr>
   );
 }
+
+const DOT_TONES: Record<ReturnType<typeof connectionState>["tone"], string> = {
+  neutral: "bg-subtle",
+  accent: "bg-accent",
+  info: "bg-info",
+  success: "bg-success",
+  warning: "bg-warning",
+  danger: "bg-danger",
+};

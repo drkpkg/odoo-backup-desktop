@@ -191,7 +191,7 @@ function InstanceForm({ instance, onClose }: { instance: InstanceView | null; on
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Transporte de backup" error={errors.transport?.message}>
+          <Field label="Transporte de respaldo" error={errors.transport?.message}>
             {({ id, describedBy, invalid }) => (
               <Select id={id} aria-describedby={describedBy} aria-invalid={invalid} {...register("transport")}>
                 {(Object.keys(TRANSPORT_PREFERENCE_LABELS) as TransportPreference[]).map((value) => (
@@ -255,7 +255,7 @@ function InstanceForm({ instance, onClose }: { instance: InstanceView | null; on
 
         <div className="space-y-2.5">
           <Checkbox label="Incluir filestore" description="Adjuntos y archivos de la base. Desactivarlo solo es efectivo en Odoo 19 o con el módulo." {...register("includeFilestore")} />
-          <Checkbox label="Subir a Google Drive" description="Tras validar el backup, se sube a la carpeta configurada en Ajustes." {...register("uploadToDrive")} />
+          <Checkbox label="Subir a Google Drive" description="Tras validar el respaldo, se sube a la carpeta configurada en Ajustes." {...register("uploadToDrive")} />
         </div>
 
         {saveError ? <Alert tone="danger">{saveError}</Alert> : null}

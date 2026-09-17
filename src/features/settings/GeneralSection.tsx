@@ -73,7 +73,7 @@ export function GeneralSection({ settings }: { settings: Settings }) {
 
   return (
     <Card
-      title="Backups"
+      title="Respaldos"
       description="Dónde se guardan los archivos y cómo se ejecutan."
       footer={
         <>
@@ -100,7 +100,7 @@ export function GeneralSection({ settings }: { settings: Settings }) {
           )}
         </Field>
 
-        <Field label="Backups locales a conservar por instancia" hint="Los más antiguos se eliminan después de cada backup correcto.">
+        <Field label="Respaldos locales a conservar por instancia" hint="Los más antiguos se eliminan después de cada respaldo correcto.">
           {({ id, describedBy }) => (
             <NullableNumberInput
               id={id}
@@ -115,7 +115,7 @@ export function GeneralSection({ settings }: { settings: Settings }) {
         </Field>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Backups simultáneos" hint="Máximo de backups en paralelo.">
+          <Field label="Respaldos simultáneos" hint="Máximo de respaldos en paralelo.">
             {({ id, describedBy }) => (
               <Select
                 id={id}

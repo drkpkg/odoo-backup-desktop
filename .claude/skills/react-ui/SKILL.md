@@ -8,6 +8,16 @@ description: Use when building or changing the Odoo Backup Desktop frontend in s
 The UI is a thin client over the Rust commands documented in `docs/architecture.md`
 ("Contrato IPC"). It never talks to Odoo or Google directly and never stores secrets.
 
+## Terminology and layout rules
+
+- Spanish copy uses **respaldo / respaldar / respaldos**, never "backup" (brand name excepted).
+- Tables must work at the minimum window (900×600) without horizontal scroll: `table-fixed` +
+  `<colgroup>` widths, `truncate` + `title` for long text, secondary details behind a row
+  disclosure or `@container` queries (`@3xl:`), row actions = one primary button + `ActionMenu`
+  (`src/components/ActionMenu.tsx`, portal + keyboard support). Plugin `instance_actions` go into
+  that menu under "Extensiones".
+- Verify layout changes with the headless Chromium checks at 1180×780 and 900×600, light and dark.
+
 ## Stack
 
 React 19, TypeScript (strict), Vite, Tailwind CSS v4 (`@tailwindcss/vite`), TanStack Query for

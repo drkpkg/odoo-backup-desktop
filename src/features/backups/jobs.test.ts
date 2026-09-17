@@ -32,7 +32,7 @@ describe("jobsReducer", () => {
       { type: "progress", jobId: "j1", stage: "server_preparing", elapsedSecs: 3 },
     ]);
     expect(runningJobForInstance(state, "i1")?.stage).toBe("server_preparing");
-    expect(describeJob(state.jobs.j1!).label).toBe("El servidor está preparando el backup (00:03)");
+    expect(describeJob(state.jobs.j1!).label).toBe("El servidor está preparando el respaldo (00:03)");
 
     state = apply([{ type: "progress", jobId: "j1", stage: "downloading", received: 5 * 1024 * 1024, total: null }], state);
     let job = state.jobs.j1!;

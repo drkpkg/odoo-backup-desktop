@@ -48,18 +48,18 @@ export function BackupJobsProvider({ children }: { children: ReactNode }) {
         case "completed":
           refreshData();
           toast.success(
-            `Backup completado: ${event.entry.instanceName}`,
+            `Respaldo completado: ${event.entry.instanceName}`,
             event.entry.drive.status === "failed" ? "El archivo se guardó, pero falló la subida a Google Drive." : undefined,
           );
           setTimeout(() => dispatch({ type: "dismiss", jobId: event.jobId }), 10_000);
           break;
         case "failed":
           refreshData();
-          toast.error(`Falló el backup de ${instanceName(instanceId)}`, messageForCode(event.code));
+          toast.error(`Falló el respaldo de ${instanceName(instanceId)}`, messageForCode(event.code));
           break;
         case "cancelled":
           refreshData();
-          toast.info(`Backup cancelado: ${instanceName(instanceId)}`);
+          toast.info(`Respaldo cancelado: ${instanceName(instanceId)}`);
           setTimeout(() => dispatch({ type: "dismiss", jobId: event.jobId }), 4_000);
           break;
         default:

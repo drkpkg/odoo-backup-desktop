@@ -220,7 +220,7 @@ export class MockBackend implements Backend {
   private jobs = new Map<string, SimulatedJob>();
   private lockHandlers = new Set<(payload: VaultLockedPayload) => void>();
   private settings: Settings = {
-    downloadDir: "/home/usuario/Backups/Odoo",
+    downloadDir: "/home/usuario/Respaldos/Odoo",
     keepLastLocal: 10,
     maxConcurrentBackups: 2,
     serverPrepareTimeoutMinutes: 60,
@@ -233,7 +233,7 @@ export class MockBackend implements Backend {
     hasClientSecret: true,
     connected: true,
     email: "backups@example.com",
-    displayName: "Backups Odoo",
+    displayName: "Respaldos Odoo",
   };
   private driveConnect: { timer: ReturnType<typeof setTimeout>; reject: (e: unknown) => void } | null = null;
 
@@ -865,7 +865,7 @@ export class MockBackend implements Backend {
     return new Promise<DriveStatus>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.driveConnect = null;
-        this.drive = { ...this.drive, connected: true, email: "backups@example.com", displayName: "Backups Odoo" };
+        this.drive = { ...this.drive, connected: true, email: "backups@example.com", displayName: "Respaldos Odoo" };
         resolve({ ...this.drive });
       }, 4000 * this.speed);
       this.driveConnect = { timer, reject };
@@ -902,7 +902,7 @@ export class MockBackend implements Backend {
             id: "s3-storage",
             name: "Amazon S3",
             version: "0.3.0",
-            description: "Sube los backups a un bucket de S3 (requiere el backend de plugins).",
+            description: "Sube los respaldos a un bucket de S3 (requiere el backend de plugins).",
             author: "Felix Daniel Coca Calvimontes",
             contributes: { destinations: [{ id: "s3", label: "Amazon S3" }], hooks: ["after_backup"] },
             permissions: { network: ["*.amazonaws.com"] },
@@ -1109,7 +1109,7 @@ export class MockBackend implements Backend {
 
   async pickDirectory(): Promise<string | null> {
     await this.delay(200);
-    return "/home/usuario/Documentos/Backups Odoo";
+    return "/home/usuario/Documentos/Respaldos Odoo";
   }
 }
 

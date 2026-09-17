@@ -299,7 +299,7 @@ function PluginCard({
         </div>
         {needsBackend ? (
           <p className="text-xs text-subtle">
-            Los destinos de backup, hooks y backends WebAssembly se habilitarán en la próxima fase; el resto del plugin ya funciona.
+            Los destinos de respaldo, hooks y backends WebAssembly se habilitarán en la próxima fase; el resto del plugin ya funciona.
           </p>
         ) : null}
       </div>

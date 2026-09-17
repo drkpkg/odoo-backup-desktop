@@ -23,7 +23,8 @@ Read `docs/architecture.md` first: it holds the IPC contract, vault format and s
   `docs/plugins.md`) and `src/lib/ipc.ts`. Only add them to `allow-plugin-window-commands` if plugin
   windows really need them.
 - Plugins never get Tauri IPC: their pages run in sandboxed iframes and talk through the bridge.
-- Code, identifiers and comments in English; UI strings in Spanish.
+- Code, identifiers and comments in English; UI strings in Spanish. In Spanish copy say **respaldo /
+  respaldar / respaldos** (never "backup"); the brand name "Odoo Backup Desktop" stays as is.
 - Commits and PRs carry no AI attribution.
 
 ## Commands

@@ -81,10 +81,10 @@ export function ProbeReportView({ report }: { report: ProbeReport }) {
         <Alert tone="success" title={`Transporte recomendado: ${TRANSPORT_LABELS[report.recommendedTransport]}`}>
           {report.recommendedTransport === "obd_module"
             ? "Usa la API key y no necesita la contraseña maestra."
-            : "Envía la contraseña maestra al servidor en cada backup."}
+            : "Envía la contraseña maestra al servidor en cada respaldo."}
         </Alert>
       ) : (
-        <Alert tone="warning" title="No hay un transporte de backup disponible">
+        <Alert tone="warning" title="No hay un transporte de respaldo disponible">
           Instala el módulo obd_backup (requiere API key) o habilita list_db y guarda la contraseña maestra.
         </Alert>
       )}
